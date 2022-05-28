@@ -130,18 +130,6 @@ func (c *Engine) BuildTx(from, to common.Address, gas uint64, gasPrice *big.Int,
 	}
 	var buildTx *types.Transaction
 	switch c.txType {
-	case EIP155Signer:
-		buildTx = types.NewTx(&types.LegacyTx{
-			Nonce:    nonce,
-			GasPrice: gasPrice,
-			Gas:      gas,
-			To:       &to,
-			Value:    value,
-			Data:     data,
-			V:        nil,
-			R:        nil,
-			S:        nil,
-		})
 	case EIP2930Signer:
 		chainId, err := c.GetChainId()
 		if err != nil {
@@ -161,6 +149,19 @@ func (c *Engine) BuildTx(from, to common.Address, gas uint64, gasPrice *big.Int,
 			V:          nil,
 			R:          nil,
 			S:          nil,
+		})
+
+	default:
+		buildTx = types.NewTx(&types.LegacyTx{
+			Nonce:    nonce,
+			GasPrice: gasPrice,
+			Gas:      gas,
+			To:       &to,
+			Value:    value,
+			Data:     data,
+			V:        nil,
+			R:        nil,
+			S:        nil,
 		})
 	}
 
@@ -212,9 +213,11 @@ func (c *Engine) Singer() (types.Signer, error) {
 
 	switch c.txType {
 	case EIP155Signer:
-		signer = types.NewEIP155Signer(chianId)
+		signer = types.NewEIP2930Signer(chianId)
 	case EIP2930Signer:
 		signer = types.NewLondonSigner(chianId)
+	default:
+		signer = types.NewEIP155Signer(chianId)
 	}
 
 	return signer, nil
