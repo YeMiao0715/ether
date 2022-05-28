@@ -131,6 +131,6 @@ func TestErc721_SafeTransferFrom(t *testing.T) {
 }
 
 func TestErc721Contract_Approve(t *testing.T) {
-	e := NewErc721Contract(common.HexToAddress("0x10C29E9abcCc3312cAe8563f91ffc24D20D84EDE"), engine)
+	e := NewErc721WithContract(engine, common.HexToAddress("0x10C29E9abcCc3312cAe8563f91ffc24D20D84EDE"))
 	t.Log(e.OwnerOf(big.NewInt(51)))
 }

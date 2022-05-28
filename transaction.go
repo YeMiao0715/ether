@@ -59,3 +59,18 @@ func (t Transaction) ContractType(engine *Engine) {
 	//isContract, code, err := t.IsContract(engine)
 	//vm.Contract{}
 }
+
+func (t Transaction) AsMessage(engine *Engine) (*types.Message, error) {
+	transaction, _ := t.Transaction()
+
+	singer, err := engine.Singer()
+	if err != nil {
+		return nil, err
+	}
+	message, err := transaction.AsMessage(singer, transaction.GasPrice())
+	if err != nil {
+		return nil, err
+	}
+
+	return &message, nil
+}

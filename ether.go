@@ -16,6 +16,13 @@ import (
 	"strings"
 )
 
+type EngineType int
+
+const (
+	EIP155Signer  EngineType = 1
+	EIP2930Signer EngineType = 2
+)
+
 type Engine struct {
 	logger    *zap.Logger
 	rpcClient *rpc.Client
@@ -26,11 +33,17 @@ type Engine struct {
 	isWs   bool   // 当前是否为ws链接，当为ws链接时可以使用一些订阅事件
 	rpcUrl string // 设置rcp链接
 	wsUrl  string // 设置ws链接
+
+	txType EngineType
 }
 
 // NewEngine 新建一个链接引擎，全局唯一
 func NewEngine(logger *zap.Logger, rpcUrl string, wsUrl string) *Engine {
-	return &Engine{logger: logger, rpcUrl: rpcUrl, wsUrl: wsUrl, gasPrice: decimal.New(2, 9).BigInt()}
+	return &Engine{logger: logger, rpcUrl: rpcUrl, wsUrl: wsUrl, gasPrice: decimal.New(2, 9).BigInt(), txType: 0}
+}
+
+func NewEngineWithType(logger *zap.Logger, rpcUrl string, wsUrl string, txType EngineType) *Engine {
+	return &Engine{logger: logger, rpcUrl: rpcUrl, wsUrl: wsUrl, gasPrice: decimal.New(2, 9).BigInt(), txType: txType}
 }
 
 func (c *Engine) GetRpcClient() (*rpc.Client, bool, error) {
@@ -115,18 +128,41 @@ func (c *Engine) BuildTx(from, to common.Address, gas uint64, gasPrice *big.Int,
 	if err != nil {
 		return nil, err
 	}
+	var buildTx *types.Transaction
+	switch c.txType {
+	case EIP155Signer:
+		buildTx = types.NewTx(&types.LegacyTx{
+			Nonce:    nonce,
+			GasPrice: gasPrice,
+			Gas:      gas,
+			To:       &to,
+			Value:    value,
+			Data:     data,
+			V:        nil,
+			R:        nil,
+			S:        nil,
+		})
+	case EIP2930Signer:
+		chainId, err := c.GetChainId()
+		if err != nil {
+			return nil, err
+		}
 
-	buildTx := types.NewTx(&types.LegacyTx{
-		Nonce:    nonce,
-		GasPrice: gasPrice,
-		Gas:      gas,
-		To:       &to,
-		Value:    value,
-		Data:     data,
-		V:        nil,
-		R:        nil,
-		S:        nil,
-	})
+		buildTx = types.NewTx(&types.DynamicFeeTx{
+			ChainID:    chainId,
+			Nonce:      nonce,
+			GasTipCap:  gasPrice,
+			GasFeeCap:  gasPrice,
+			Gas:        gas,
+			To:         &to,
+			Value:      value,
+			Data:       data,
+			AccessList: nil,
+			V:          nil,
+			R:          nil,
+			S:          nil,
+		})
+	}
 
 	return buildTx, nil
 }
@@ -172,7 +208,15 @@ func (c *Engine) Singer() (types.Signer, error) {
 	if err != nil {
 		return nil, err
 	}
-	signer := types.NewEIP155Signer(chianId)
+	var signer types.Signer
+
+	switch c.txType {
+	case EIP155Signer:
+		signer = types.NewEIP155Signer(chianId)
+	case EIP2930Signer:
+		signer = types.NewLondonSigner(chianId)
+	}
+
 	return signer, nil
 }
 
@@ -337,4 +381,16 @@ func (c *Engine) TransferEth(to common.Address, value *big.Int, privateKey strin
 		return "", nil, err
 	}
 	return c.SendTransactionWithPrivateKey(buildTx, privateKey)
+}
+
+func (c *Engine) GetBlockNumber() (uint64, error) {
+	client, _, err := c.GetEthClient()
+	if err != nil {
+		return 0, err
+	}
+	blockNumber, err := client.BlockNumber(context.Background())
+	if err != nil {
+		return 0, err
+	}
+	return blockNumber, nil
 }

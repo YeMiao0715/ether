@@ -12,7 +12,7 @@ type Erc721Contract struct {
 	erc721   *Erc721
 }
 
-func NewErc721Contract(contract common.Address, engine *ether.Engine) *Erc721Contract {
+func NewErc721WithContract(engine *ether.Engine, contract common.Address) *Erc721Contract {
 	return &Erc721Contract{
 		contract: contract,
 		erc721:   NewErc721(engine),
