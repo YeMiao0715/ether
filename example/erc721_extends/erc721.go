@@ -22,7 +22,7 @@ type Erc721Extends struct {
 func NewErc721Extends(contract common.Address, engine *ether.Engine) *Erc721Extends {
 	return &Erc721Extends{
 		engine,
-		erc721.NewErc721Contract(contract, engine),
+		erc721.NewErc721WithContract(engine, contract),
 	}
 }
 

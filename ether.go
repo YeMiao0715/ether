@@ -353,6 +353,25 @@ func (c *Engine) CallContract(contract common.Address, data []byte) ([]byte, err
 	return resb, nil
 }
 
+func (c *Engine) CallContractWithFrom(from, contract common.Address, data []byte) ([]byte, error) {
+	client, _, err := c.GetEthClient()
+	if err != nil {
+		return nil, err
+	}
+
+	resb, err := client.PendingCallContract(context.Background(), ethereum.CallMsg{
+		From: from,
+		To:   &contract,
+		Data: data,
+	})
+
+	if err != nil {
+		return nil, errors.Wrap(err, "访问合约失败")
+	}
+
+	return resb, nil
+}
+
 func (c *Engine) GetBalance(account common.Address) (*big.Int, error) {
 	client, _, err := c.GetEthClient()
 	if err != nil {
