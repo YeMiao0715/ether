@@ -24,11 +24,12 @@ const (
 )
 
 type Engine struct {
-	logger    *zap.Logger
-	rpcClient *rpc.Client
-	ethClient *ethclient.Client
-	chainId   *big.Int
-	gasPrice  *big.Int
+	logger         *zap.Logger
+	rpcClient      *rpc.Client
+	ethClient      *ethclient.Client
+	chainId        *big.Int
+	gasPrice       *big.Int
+	gasLimitOffset uint64
 
 	isWs   bool   // 当前是否为ws链接，当为ws链接时可以使用一些订阅事件
 	rpcUrl string // 设置rcp链接
@@ -39,11 +40,11 @@ type Engine struct {
 
 // NewEngine 新建一个链接引擎，全局唯一
 func NewEngine(logger *zap.Logger, rpcUrl string, wsUrl string) *Engine {
-	return &Engine{logger: logger, rpcUrl: rpcUrl, wsUrl: wsUrl, gasPrice: decimal.New(2, 9).BigInt(), txType: 0}
+	return &Engine{logger: logger, rpcUrl: rpcUrl, wsUrl: wsUrl, gasPrice: decimal.New(2, 9).BigInt(), txType: 0, gasLimitOffset: 0}
 }
 
 func NewEngineWithType(logger *zap.Logger, rpcUrl string, wsUrl string, txType EngineType) *Engine {
-	return &Engine{logger: logger, rpcUrl: rpcUrl, wsUrl: wsUrl, gasPrice: decimal.New(2, 9).BigInt(), txType: txType}
+	return &Engine{logger: logger, rpcUrl: rpcUrl, wsUrl: wsUrl, gasPrice: decimal.New(2, 9).BigInt(), txType: txType, gasLimitOffset: 0}
 }
 
 func (c *Engine) GetRpcClient() (*rpc.Client, bool, error) {
@@ -95,6 +96,14 @@ func (c *Engine) SetGasPrice(gasPrice *big.Int) {
 	c.gasPrice = gasPrice
 }
 
+func (c *Engine) SetGasLimitOffset(offset uint64) {
+	c.gasLimitOffset = offset
+}
+
+func (c *Engine) SetLogger(logger *zap.Logger) {
+	c.logger = logger
+}
+
 func (c *Engine) GetNonce(address common.Address) (uint64, error) {
 	client, _, err := c.GetEthClient()
 	if err != nil {
@@ -141,7 +150,7 @@ func (c *Engine) BuildTx(from, to common.Address, gas uint64, gasPrice *big.Int,
 			Nonce:      nonce,
 			GasTipCap:  gasPrice,
 			GasFeeCap:  gasPrice,
-			Gas:        gas,
+			Gas:        gas + c.gasLimitOffset,
 			To:         &to,
 			Value:      value,
 			Data:       data,
