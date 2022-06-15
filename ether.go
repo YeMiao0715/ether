@@ -132,10 +132,16 @@ func (c *Engine) GasPrice() *big.Int {
 	return c.gasPrice
 }
 
-func (c *Engine) BuildTx(from, to common.Address, gas uint64, gasPrice *big.Int, value *big.Int, data []byte) (*types.Transaction, error) {
-	nonce, err := c.GetNonce(from)
-	if err != nil {
-		return nil, err
+func (c *Engine) BuildTx(from, to common.Address, gas uint64, gasPrice *big.Int, value *big.Int, data []byte, setNonce *uint64) (*types.Transaction, error) {
+	var nonce uint64 = 0
+	if setNonce == nil {
+		_nonce, err := c.GetNonce(from)
+		if err != nil {
+			return nil, err
+		}
+		nonce = _nonce
+	} else {
+		nonce = *setNonce
 	}
 	var buildTx *types.Transaction
 	switch c.txType {
@@ -178,7 +184,7 @@ func (c *Engine) BuildTx(from, to common.Address, gas uint64, gasPrice *big.Int,
 }
 
 func (c *Engine) BuildTxByContractWithGas(sender, contract common.Address, gas uint64, data []byte) (*types.Transaction, error) {
-	buildTx, err := c.BuildTx(sender, contract, gas, c.GasPrice(), nil, data)
+	buildTx, err := c.BuildTx(sender, contract, gas, c.GasPrice(), nil, data, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +196,7 @@ func (c *Engine) BuildTxByContract(sender, contract common.Address, data []byte)
 	if err != nil {
 		return nil, err
 	}
-	buildTx, err := c.BuildTx(sender, contract, gas, c.GasPrice(), nil, data)
+	buildTx, err := c.BuildTx(sender, contract, gas, c.GasPrice(), nil, data, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +212,7 @@ func (c *Engine) BuildTxByContractWithPrivateKey(contract common.Address, data [
 	if err != nil {
 		return nil, err
 	}
-	buildTx, err := c.BuildTx(*sender, contract, gas, c.GasPrice(), nil, data)
+	buildTx, err := c.BuildTx(*sender, contract, gas, c.GasPrice(), nil, data, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -407,7 +413,25 @@ func (c *Engine) TransferEth(to common.Address, value *big.Int, privateKey strin
 		return "", nil, err
 	}
 
-	buildTx, err := c.BuildTx(*sender, to, gas, c.gasPrice, value, nil)
+	buildTx, err := c.BuildTx(*sender, to, gas, c.gasPrice, value, nil, nil)
+	if err != nil {
+		return "", nil, err
+	}
+	return c.SendTransactionWithPrivateKey(buildTx, privateKey)
+}
+
+func (c *Engine) TransferEthWithNonce(to common.Address, value *big.Int, privateKey string, setNonce *uint64) (string, *types.Transaction, error) {
+	sender, err := c.PrivateKeyToAddress(privateKey)
+	if err != nil {
+		return "", nil, err
+	}
+
+	gas, err := c.EstimateGas(*sender, to, value, nil)
+	if err != nil {
+		return "", nil, err
+	}
+
+	buildTx, err := c.BuildTx(*sender, to, gas, c.gasPrice, value, nil, setNonce)
 	if err != nil {
 		return "", nil, err
 	}
