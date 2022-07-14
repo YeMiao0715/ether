@@ -52,7 +52,7 @@ func TestErc721_Approve(t *testing.T) {
 		common.HexToAddress("0x10C29E9abcCc3312cAe8563f91ffc24D20D84EDE"),
 		common.HexToAddress("0x06eea78c7722d79b5B4B4681cB0E5798146f193d"),
 		big.NewInt(100),
-		"9d3f5dd0dd61eff0c54bea1b32234220d87135f231a5633f6bcb6df0aaa1acf4",
+		"",
 	)
 	if err != nil {
 		fmt.Printf("%+v", err)
@@ -92,7 +92,7 @@ func TestErc721_TransferFrom(t *testing.T) {
 		common.HexToAddress("0x7eBEc3488D6951eDC00FA3fB63657F70e2D20bCf"),
 		common.HexToAddress("0x06eea78c7722d79b5B4B4681cB0E5798146f193d"),
 		big.NewInt(50),
-		"9d3f5dd0dd61eff0c54bea1b32234220d87135f231a5633f6bcb6df0aaa1acf4",
+		"",
 	)
 	if err != nil {
 		fmt.Printf("%+v", err)
@@ -115,7 +115,7 @@ func TestErc721_SafeTransferFrom(t *testing.T) {
 		common.HexToAddress("0x7eBEc3488D6951eDC00FA3fB63657F70e2D20bCf"),
 		common.HexToAddress("0x06eea78c7722d79b5B4B4681cB0E5798146f193d"),
 		big.NewInt(51),
-		"9d3f5dd0dd61eff0c54bea1b32234220d87135f231a5633f6bcb6df0aaa1acf4",
+		"",
 	)
 	if err != nil {
 		fmt.Printf("%+v", err)

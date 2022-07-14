@@ -16,7 +16,7 @@ type Erc721Abi struct {
 	abi *abi.ABI
 }
 
-func (e *Erc721Abi) getAbi() (*abi.ABI, error) {
+func (e *Erc721Abi) GetAbi() (*abi.ABI, error) {
 	if e.abi == nil {
 		_erc721Abi, err := abi.JSON(strings.NewReader(erc721AbiJson))
 		if err != nil {
@@ -28,7 +28,7 @@ func (e *Erc721Abi) getAbi() (*abi.ABI, error) {
 }
 
 func (e *Erc721Abi) Method(fn string, param ...interface{}) ([]byte, error) {
-	erc721Abi, err := e.getAbi()
+	erc721Abi, err := e.GetAbi()
 	if err != nil {
 		return nil, err
 	}

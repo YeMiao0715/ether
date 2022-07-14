@@ -59,7 +59,7 @@ func TestErc20_Approve(t *testing.T) {
 		common.HexToAddress("0x06eea78c7722d79b5B4B4681cB0E5798146f193d"),
 		common.HexToAddress("0x762f7957714CfCfd271a9078e8f446692627126f"),
 		decimal.New(2, 18).BigInt(),
-		"3a78981e002260660e21e27b66a16a56a8f3ada60d9fc59e67410c1f3576ea61",
+		"",
 	)
 	t.Log(hash, buildTx, err)
 }
@@ -70,7 +70,7 @@ func TestErc20_Transfer(t *testing.T) {
 		common.HexToAddress("0x762f7957714CfCfd271a9078e8f446692627126f"),
 		common.HexToAddress("0xa1be04c6F760D887Fd83570734c8B06F77B8826e"),
 		decimal.New(100, 18).BigInt(),
-		"3a78981e002260660e21e27b66a16a56a8f3ada60d9fc59e67410c1f3576ea61",
+		"",
 	)
 
 	if err != nil {

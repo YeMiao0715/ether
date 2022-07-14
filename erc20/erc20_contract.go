@@ -39,8 +39,12 @@ func (e *Erc20Contract) BalanceOf(address common.Address) (*big.Int, error) {
 	return e.erc20.BalanceOf(e.contract, address)
 }
 
-func (e *Erc20Contract) Approve(owner, spender common.Address, amount *big.Int, privateKey string) (string, *types.Transaction, error) {
-	return e.erc20.Approve(e.contract, owner, spender, amount, privateKey)
+func (e *Erc20Contract) Approve(spender common.Address, amount *big.Int, privateKey string) (string, *types.Transaction, error) {
+	owner, err := e.erc20.engine.PrivateKeyToAddress(privateKey)
+	if err != nil {
+		return "", nil, err
+	}
+	return e.erc20.Approve(e.contract, *owner, spender, amount, privateKey)
 }
 
 func (e *Erc20Contract) Allowance(owner, spender common.Address) (*big.Int, error) {

@@ -279,7 +279,7 @@ func (c *Engine) SendTransactionWithPrivateKey(transaction *types.Transaction, p
 	if err != nil {
 		return "", nil, err
 	}
-	privKey, err := c.hexToEcdsaPrivateKey(privateKey)
+	privKey, err := c.HexToEcdsaPrivateKey(privateKey)
 	if err != nil {
 		return "", nil, errors.Wrap(err, "解析私钥失败")
 	}
@@ -296,7 +296,7 @@ func (c *Engine) SendTransactionWithPrivateKey(transaction *types.Transaction, p
 	return hash, transaction, err
 }
 
-func (c *Engine) hexToEcdsaPrivateKey(privateKey string) (*ecdsa.PrivateKey, error) {
+func (c *Engine) HexToEcdsaPrivateKey(privateKey string) (*ecdsa.PrivateKey, error) {
 	str := privateKey
 	pk := common.HexToHash(privateKey)
 	if strings.Index(pk.Hex(), "0x") != -1 {
@@ -310,13 +310,23 @@ func (c *Engine) hexToEcdsaPrivateKey(privateKey string) (*ecdsa.PrivateKey, err
 }
 
 func (c *Engine) PrivateKeyToAddress(privateKey string) (*common.Address, error) {
-	privKey, err := c.hexToEcdsaPrivateKey(privateKey)
+	privKey, err := c.HexToEcdsaPrivateKey(privateKey)
 	if err != nil {
 		return nil, err
 	}
 	addr := crypto.PubkeyToAddress(privKey.PublicKey)
 	return &addr, nil
 }
+
+//func (c *Engine) PrivateSign(hash common.Hash, privateKey string) (common.Hash, error) {
+//	privKey, err := c.hexToEcdsaPrivateKey(privateKey)
+//	if err != nil {
+//		return common.Hash{}, err
+//	}
+//	privKey.Sign()
+//
+//	return
+//}
 
 func (c *Engine) TransactionByHash(hash common.Hash) (*Transaction, error) {
 	client, _, err := c.GetEthClient()
