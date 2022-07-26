@@ -92,5 +92,59 @@ func TestService_RemoveLiquidityWithPermit(t *testing.T) {
 
 	lpAmount, err := serv.AmountByLpFromFloat(0.001)
 	t.Log(lpAmount, err)
-	t.Log(serv.RemoveLiquidityWithPermit(lpAmount, ""))
+	t.Log(serv.RemoveLiquidity(lpAmount, ""))
+}
+
+func TestService_RemoveLiquidityWithTokenA(t *testing.T) {
+	factory := NewFactoryContract(engine, common.HexToAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"))
+	serv, err := NewServiceWithFactory(engine,
+		factory,
+		router2,
+		//tokenA,
+		tokenB,
+		common.HexToAddress("0xD92FC79A4A713cEB005FD4D6901D527F6C62112A"),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	amountB, err := serv.AmountByTokenBFromFloat(10000)
+	t.Log(amountB, err)
+	t.Log(serv.RemoveLiquidityWithTokenB(amountB, ""))
+}
+
+func TestService_SwapByTokenA(t *testing.T) {
+	factory := NewFactoryContract(engine, common.HexToAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"))
+	serv, err := NewServiceWithFactory(engine,
+		factory,
+		router2,
+		//tokenA,
+		tokenB,
+		common.HexToAddress("0xD92FC79A4A713cEB005FD4D6901D527F6C62112A"),
+	)
+	t.Log(serv, err)
+
+	amountA, err := serv.AmountByTokenAFromFloat(1)
+	swapTx, _, err := serv.Buy(amountA, 0, "")
+	t.Log(swapTx.Hash().String())
+}
+
+func TestService_SwapByTokenB(t *testing.T) {
+	factory := NewFactoryContract(engine, common.HexToAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"))
+	serv, err := NewServiceWithFactory(engine,
+		factory,
+		router2,
+		//tokenA,
+		tokenB,
+		common.HexToAddress("0xD92FC79A4A713cEB005FD4D6901D527F6C62112A"),
+	)
+	t.Log(serv, err)
+
+	amountB, err := serv.AmountByTokenBFromFloat(1000)
+	swapTx, _, err := serv.Sell(amountB, 0.065, "")
+	if err != nil {
+		fmt.Printf("%+v", err)
+		return
+	}
+	t.Log(swapTx.Hash().String())
 }
