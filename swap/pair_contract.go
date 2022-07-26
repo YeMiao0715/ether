@@ -25,6 +25,10 @@ func NewPairContract(engine *ether.Engine, contract common.Address) *PairContrac
 	}
 }
 
+func (p *PairContract) Contract() common.Address {
+	return p.contract
+}
+
 func (p *PairContract) Factory() (common.Address, error) {
 	return p.Pair.Factory(p.contract)
 }

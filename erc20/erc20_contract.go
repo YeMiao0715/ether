@@ -19,6 +19,10 @@ func NewErc20WithContract(engine *ether.Engine, contract common.Address) *Erc20C
 	}
 }
 
+func (e *Erc20Contract) Contract() common.Address {
+	return e.contract
+}
+
 func (e *Erc20Contract) Name() (string, error) {
 	return e.erc20.Name(e.contract)
 }
