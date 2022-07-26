@@ -104,6 +104,10 @@ func (c *Engine) SetLogger(logger *zap.Logger) {
 	c.logger = logger
 }
 
+func (c *Engine) Logger() *zap.Logger {
+	return c.logger
+}
+
 func (c *Engine) GetNonce(address common.Address) (uint64, error) {
 	client, _, err := c.GetEthClient()
 	if err != nil {

@@ -1,12 +1,10 @@
-package swap
+package swap_v2
 
 import (
-	"fmt"
 	"github.com/YeMiao0715/ether"
 	"github.com/YeMiao0715/ether/erc20"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 )
@@ -78,8 +76,6 @@ func (p *PairContract) PermitSign(sender common.Address, amount *big.Int, deadli
 	if err != nil {
 		return
 	}
-	fmt.Println(PERMIT_TYPEHASH)
-	fmt.Println(DOMAIN_SEPARATOR)
 	bytes32, _ := abi.NewType("bytes32", "", nil)
 	address, _ := abi.NewType("address", "", nil)
 	uint256, _ := abi.NewType("uint256", "", nil)
@@ -100,14 +96,12 @@ func (p *PairContract) PermitSign(sender common.Address, amount *big.Int, deadli
 	if err != nil {
 		return
 	}
-	fmt.Println(PERMIT_TYPEHASH, *owner, sender, amount, nonce, deadline)
 	b, err := args.Pack(PERMIT_TYPEHASH, *owner, sender, amount, nonce, deadline)
 	if err != nil {
 		return
 	}
 
 	DETAIL_HASH := crypto.Keccak256(b)
-	fmt.Println(hexutil.Encode(DETAIL_HASH))
 	//bytes, _ := abi.NewType("bytes", "", nil)
 	//args = abi.Arguments{
 	//	{Name: "", Type: bytes},
@@ -119,9 +113,7 @@ func (p *PairContract) PermitSign(sender common.Address, amount *big.Int, deadli
 	//if err != nil {
 	//	return
 	//}
-	fmt.Println(hexutil.Encode([]byte("\x19\x01")), hexutil.Encode(DOMAIN_SEPARATOR[:]), hexutil.Encode(DETAIL_HASH))
 	hash := crypto.Keccak256Hash([]byte("\x19\x01"), DOMAIN_SEPARATOR[:], DETAIL_HASH)
-	fmt.Println(len(hash), hash)
 
 	priv, err := p.engine.HexToEcdsaPrivateKey(privateKey)
 	if err != nil {

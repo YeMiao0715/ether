@@ -8,8 +8,11 @@ import (
 )
 
 type Erc20Contract struct {
-	contract common.Address
-	erc20    *Erc20
+	contract      common.Address
+	erc20         *Erc20
+	cacheName     *string
+	cacheSymbol   *string
+	cacheDecimals *uint8
 }
 
 func NewErc20WithContract(engine *ether.Engine, contract common.Address) *Erc20Contract {
@@ -24,15 +27,36 @@ func (e *Erc20Contract) Contract() common.Address {
 }
 
 func (e *Erc20Contract) Name() (string, error) {
-	return e.erc20.Name(e.contract)
+	if e.cacheName == nil {
+		name, err := e.erc20.Name(e.contract)
+		if err != nil {
+			return "", err
+		}
+		e.cacheName = &name
+	}
+	return *e.cacheName, nil
 }
 
 func (e *Erc20Contract) Symbol() (string, error) {
-	return e.erc20.Symbol(e.contract)
+	if e.cacheSymbol == nil {
+		symbol, err := e.erc20.Symbol(e.contract)
+		if err != nil {
+			return "", err
+		}
+		e.cacheSymbol = &symbol
+	}
+	return *e.cacheSymbol, nil
 }
 
 func (e *Erc20Contract) Decimals() (uint8, error) {
-	return e.erc20.Decimals(e.contract)
+	if e.cacheDecimals == nil {
+		decimals, err := e.erc20.Decimals(e.contract)
+		if err != nil {
+			return 0, err
+		}
+		e.cacheDecimals = &decimals
+	}
+	return *e.cacheDecimals, nil
 }
 
 func (e *Erc20Contract) TotalSupply() (*big.Int, error) {

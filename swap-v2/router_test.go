@@ -1,4 +1,4 @@
-package swap
+package swap_v2
 
 import (
 	"github.com/YeMiao0715/ether"
@@ -14,7 +14,7 @@ var engine *ether.Engine
 var router2 = common.HexToAddress("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
 var tokenA = common.HexToAddress("0xec8142A785eEA84A7A0db084039bE496CbdB2890")
 var tokenB = common.HexToAddress("0xc5CA44fa5efdd9F4F6e10858FFe1665f186bC84B")
-var swapRouter2 *Router2
+var swapRouter2 *Router
 
 var sender = common.HexToAddress("0xadD275a8Ee37acC0E82F6EB1F5ccAa3b2B51E8C0")
 var senderPrivateKey = ""
