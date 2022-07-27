@@ -354,10 +354,12 @@ func (s *Service) AddLiquidity(amountA, amountB *big.Int, privateKey string) (ad
 		return
 	}
 
+	symbolA, _ := _tokenA.Symbol()
+	symbolB, _ := _tokenB.Symbol()
 	s.engine.Logger().Info("添加流动性",
 		zap.String("hash", hash),
-		zap.String("amountA", amountA.String()),
-		zap.String("amountB", amountB.String()),
+		zap.String(symbolA, amountA.String()),
+		zap.String(symbolB, amountB.String()),
 	)
 
 	return
@@ -499,35 +501,59 @@ func (s *Service) RemoveLiquidityWithTokenB(tokenB *big.Int, privateKey string) 
 	return s.RemoveLiquidity(lpAmount, privateKey)
 }
 
-// SwapExactTokensForTokens 交换代币 A to B
-func (s *Service) SwapExactTokensForTokens(amountIn, amountOutMax *big.Int, privateKey string) (hash string, tx *types.Transaction, err error) {
-	_tokanA, err := s.TokenA()
-	if err != nil {
-		return
-	}
-	_tokanB, err := s.TokenB()
-	if err != nil {
-		return
-	}
+// SwapExactTokensForTokens 交换代币
+func (s *Service) SwapExactTokensForTokens(amountIn, amountOutMax *big.Int, tokenA, tokenB *erc20.Erc20Contract, privateKey string) (hash string, tx *types.Transaction, err error) {
 
 	owner, err := s.engine.PrivateKeyToAddress(privateKey)
 	if err != nil {
 		return
 	}
 
-	amountOutMax = decimal.NewFromBigInt(amountOutMax, 0).Mul(decimal.NewFromFloat(0.99999)).BigInt()
+	//amountOutMin = decimal.NewFromBigInt(amountOutMin, 0).Mul(decimal.NewFromFloat(0.99999)).BigInt()
 
+	symbolA, _ := tokenA.Symbol()
+	symbolB, _ := tokenB.Symbol()
 	s.engine.Logger().Info("交换代币数量",
-		zap.String("tokenA", amountIn.String()),
-		zap.String("tokenB", amountOutMax.String()),
+		zap.String(symbolA, amountIn.String()),
+		zap.String(symbolB, amountOutMax.String()),
 	)
 
 	return s.router.SwapExactTokensForTokens(
 		amountIn,
 		amountOutMax,
 		[]common.Address{
-			_tokanA.Contract(),
-			_tokanB.Contract(),
+			tokenA.Contract(),
+			tokenB.Contract(),
+		},
+		*owner,
+		big.NewInt(time.Now().Unix()+600),
+		privateKey,
+	)
+}
+
+// SwapExactTokensForTokensSupportingFeeOnTransferTokens 交换代币
+func (s *Service) SwapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn, amountOutMin *big.Int, tokenA, tokenB *erc20.Erc20Contract, privateKey string) (hash string, tx *types.Transaction, err error) {
+
+	owner, err := s.engine.PrivateKeyToAddress(privateKey)
+	if err != nil {
+		return
+	}
+
+	amountOutMin = decimal.NewFromBigInt(amountOutMin, 0).Mul(decimal.NewFromFloat(0.999)).BigInt()
+
+	symbolA, _ := tokenA.Symbol()
+	symbolB, _ := tokenB.Symbol()
+	s.engine.Logger().Info("交换代币数量",
+		zap.String(symbolA, amountIn.String()),
+		zap.String(symbolB, amountOutMin.String()),
+	)
+
+	return s.router.SwapExactTokensForTokensSupportingFeeOnTransferTokens(
+		amountIn,
+		amountOutMin,
+		[]common.Address{
+			tokenA.Contract(),
+			tokenB.Contract(),
 		},
 		*owner,
 		big.NewInt(time.Now().Unix()+600),
@@ -579,87 +605,115 @@ func (s *Service) WaitApprove(token *erc20.Erc20Contract, sender common.Address,
 	return "", nil, nil
 }
 
-// SwapTokensForExactTokens 交换代币 B to A
-func (s *Service) SwapTokensForExactTokens(amountOut, amountInMax *big.Int, privateKey string) (hash string, tx *types.Transaction, err error) {
-	_tokanA, err := s.TokenA()
-	if err != nil {
-		return
-	}
-	_tokanB, err := s.TokenB()
+func (s *Service) SwapTokenA2TokenB(amountIn *big.Int, fee float64, privateKey string) (swapTx, tokenAtx *types.Transaction, err error) {
+	amountA, amountB, err := s.GetAmountsOut(amountIn)
 	if err != nil {
 		return
 	}
 
-	owner, err := s.engine.PrivateKeyToAddress(privateKey)
+	_tokenA, err := s.TokenA()
 	if err != nil {
 		return
 	}
 
-	amountInMax = decimal.NewFromBigInt(amountInMax, 0).Mul(decimal.NewFromFloat(0.999)).BigInt()
-
-	s.engine.Logger().Info("交换代币数量",
-		zap.String("tokenA", amountInMax.String()),
-		zap.String("tokenB", amountOut.String()),
-	)
-
-	return s.router.SwapTokensForExactTokens(
-		amountOut,
-		amountInMax,
-		[]common.Address{
-			_tokanB.Contract(),
-			_tokanA.Contract(),
-		},
-		*owner,
-		big.NewInt(time.Now().Unix()+600),
-		privateKey,
-	)
-}
-
-// SwapWithTokenA 从A交换B
-func (s *Service) SwapWithTokenA(amountA *big.Int, fee float64, privateKey string) (swapTx, tokenAtx *types.Transaction, err error) {
-	amountIn, amountOut, err := s.GetAmountsOut(amountA)
+	_tokenB, err := s.TokenB()
 	if err != nil {
 		return
 	}
 
-	_tokanA, err := s.TokenA()
+	amountBDec := decimal.NewFromBigInt(amountB, 0)
+	amountBMax := amountBDec.Mul(decimal.NewFromInt(1).Sub(decimal.NewFromFloat(fee)))
+
+	_, tokenAtx, err = s.WaitApprove(_tokenA, s.router.contract, amountIn, privateKey)
 	if err != nil {
 		return
 	}
 
-	amountOutDec := decimal.NewFromBigInt(amountOut, 0)
-	amountOutMax := amountOutDec.Mul(decimal.NewFromInt(1).Sub(decimal.NewFromFloat(fee)))
-
-	_, tokenAtx, err = s.WaitApprove(_tokanA, s.router.contract, amountIn, privateKey)
-	if err != nil {
-		return
-	}
-
-	_, swapTx, err = s.SwapExactTokensForTokens(amountIn, amountOutMax.BigInt(), privateKey)
+	_, swapTx, err = s.SwapExactTokensForTokens(amountA, amountBMax.BigInt(), _tokenA, _tokenB, privateKey)
 	return
 }
 
-// SwapWithTokenB 从B交换A
-func (s *Service) SwapWithTokenB(amountB *big.Int, fee float64, privateKey string) (swapTx, tokenBtx *types.Transaction, err error) {
-	amountIn, amountOut, err := s.GetAmountsIn(amountB)
+func (s *Service) SwapTokenB2TokenA(amountIn *big.Int, fee float64, privateKey string) (swapTx, tokenBtx *types.Transaction, err error) {
+	amountA, amountB, err := s.GetAmountsIn(amountIn)
 	if err != nil {
 		return
 	}
 
-	_tokanB, err := s.TokenB()
+	_tokenA, err := s.TokenA()
 	if err != nil {
 		return
 	}
 
-	amountInDec := decimal.NewFromBigInt(amountIn, 0)
-	amountInMax := amountInDec.Mul(decimal.NewFromInt(1).Sub(decimal.NewFromFloat(fee)))
-
-	_, tokenBtx, err = s.WaitApprove(_tokanB, s.router.contract, amountOut, privateKey)
+	_tokenB, err := s.TokenB()
 	if err != nil {
 		return
 	}
 
-	_, swapTx, err = s.SwapTokensForExactTokens(amountOut, amountInMax.BigInt(), privateKey)
+	amountADec := decimal.NewFromBigInt(amountA, 0)
+	amountAMax := amountADec.Mul(decimal.NewFromInt(1).Sub(decimal.NewFromFloat(fee)))
+
+	_, tokenBtx, err = s.WaitApprove(_tokenB, s.router.contract, amountIn, privateKey)
+	if err != nil {
+		return
+	}
+
+	_, swapTx, err = s.SwapExactTokensForTokens(amountB, amountAMax.BigInt(), _tokenB, _tokenA, privateKey)
+	return
+}
+
+func (s *Service) SwapTokenA2TokenBWithSupportingFee(amountIn *big.Int, fee float64, privateKey string) (swapTx, tokenAtx *types.Transaction, err error) {
+	amountA, amountB, err := s.GetAmountsOut(amountIn)
+	if err != nil {
+		return
+	}
+
+	_tokenA, err := s.TokenA()
+	if err != nil {
+		return
+	}
+
+	_tokenB, err := s.TokenB()
+	if err != nil {
+		return
+	}
+
+	amountBDec := decimal.NewFromBigInt(amountB, 0)
+	amountBMin := amountBDec.Mul(decimal.NewFromInt(1).Sub(decimal.NewFromFloat(fee)))
+
+	_, tokenAtx, err = s.WaitApprove(_tokenA, s.router.contract, amountIn, privateKey)
+	if err != nil {
+		return
+	}
+
+	_, swapTx, err = s.SwapExactTokensForTokensSupportingFeeOnTransferTokens(amountA, amountBMin.BigInt(), _tokenA, _tokenB, privateKey)
+	return
+}
+
+func (s *Service) SwapTokenB2TokenAWithSupportingFee(amountIn *big.Int, fee float64, privateKey string) (swapTx, tokenBtx *types.Transaction, err error) {
+	amountA, amountB, err := s.GetAmountsIn(amountIn)
+	if err != nil {
+		return
+	}
+
+	_tokenA, err := s.TokenA()
+	if err != nil {
+		return
+	}
+
+	_tokenB, err := s.TokenB()
+	if err != nil {
+		return
+	}
+
+	amountADec := decimal.NewFromBigInt(amountA, 0)
+	amountBMin := amountADec.Mul(decimal.NewFromInt(1).Sub(decimal.NewFromFloat(fee)))
+
+	_, tokenBtx, err = s.WaitApprove(_tokenB, s.router.contract, amountIn, privateKey)
+	if err != nil {
+		return
+	}
+
+	_, swapTx, err = s.SwapExactTokensForTokensSupportingFeeOnTransferTokens(amountB, amountBMin.BigInt(), _tokenB, _tokenA, privateKey)
 	return
 }
 

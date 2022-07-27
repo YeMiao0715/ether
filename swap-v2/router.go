@@ -325,6 +325,28 @@ func (e *Router) SwapETHForExactTokens(
 	return e.engine.SendTransactionWithPrivateKey(tx, privateKey)
 }
 
+func (e *Router) SwapExactTokensForTokensSupportingFeeOnTransferTokens(
+	contract common.Address,
+	amountIn,
+	amountOutMin *big.Int,
+	path []common.Address,
+	to common.Address,
+	deadline *big.Int,
+	privateKey string,
+) (string, *types.Transaction, error) {
+	abiData, err := e.iRouter.SwapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn, amountOutMin, path, to, deadline)
+	if err != nil {
+		return "", nil, err
+	}
+
+	tx, err := e.engine.BuildTxByContractWithPrivateKey(contract, abiData, privateKey)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return e.engine.SendTransactionWithPrivateKey(tx, privateKey)
+}
+
 func (e *Router) Quote(contract common.Address, amountA, reserveA, reserveB *big.Int) (*big.Int, error) {
 	b, err := e.iRouter.Quote(amountA, reserveA, reserveB)
 	if err != nil {

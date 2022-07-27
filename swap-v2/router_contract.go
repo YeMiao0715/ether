@@ -178,6 +178,17 @@ func (c *RouterContract) SwapETHForExactTokens(
 	return c.Router.SwapETHForExactTokens(c.contract, amountOut, path, to, deadline, privateKey)
 }
 
+func (c *RouterContract) SwapExactTokensForTokensSupportingFeeOnTransferTokens(
+	amountIn,
+	amountOutMin *big.Int,
+	path []common.Address,
+	to common.Address,
+	deadline *big.Int,
+	privateKey string,
+) (string, *types.Transaction, error) {
+	return c.Router.SwapExactTokensForTokensSupportingFeeOnTransferTokens(c.contract, amountIn, amountOutMin, path, to, deadline, privateKey)
+}
+
 func (c *RouterContract) Quote(amountA, reserveA, reserveB *big.Int) (*big.Int, error) {
 	return c.Router.Quote(c.contract, amountA, reserveA, reserveB)
 }

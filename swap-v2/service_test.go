@@ -56,8 +56,8 @@ func TestNewServiceWithFactory(t *testing.T) {
 }
 
 func TestService_AddLiquidityByTokenA(t *testing.T) {
-	amountA, err := serv.AmountByTokenAFromFloat(10000)
-	tx, tokenATx, tokenBTx, err := serv.AddLiquidityWithTokenA(amountA, true, "")
+	amountA, err := serv.AmountByTokenAFromFloat(100)
+	tx, tokenATx, tokenBTx, err := serv.AddLiquidityWithTokenA(amountA, "")
 	if err != nil {
 		fmt.Printf("%+v", err)
 	}
@@ -82,7 +82,7 @@ func TestService_RemoveLiquidityWithTokenA(t *testing.T) {
 
 func TestService_SwapWithTokenA(t *testing.T) {
 	amountA, _ := serv.AmountByTokenAFromFloat(1)
-	swapTx, _, err := serv.SwapWithTokenA(amountA, 0, "")
+	swapTx, _, err := serv.SwapTokenA2TokenBWithSupportingFee(amountA, 0.07, "")
 	if err != nil {
 		fmt.Printf("%+v", err)
 		return
@@ -91,25 +91,25 @@ func TestService_SwapWithTokenA(t *testing.T) {
 }
 
 func TestService_SwapWithTokenB(t *testing.T) {
-	_tokenA, _ := serv.TokenA()
-	_tokenB, _ := serv.TokenB()
-	owner, _ := serv.engine.PrivateKeyToAddress("")
-	_pair, _ := serv.Pair()
-	t.Log(_tokenA.Approve(_pair.contract, big.NewInt(0), ""))
-	t.Log(_tokenB.Approve(_pair.contract, big.NewInt(0), ""))
-	t.Log(_tokenA.Approve(serv.Router().contract, big.NewInt(0), ""))
-	t.Log(_tokenB.Approve(serv.Router().contract, big.NewInt(0), ""))
-	t.Log(_tokenA.Allowance(*owner, _pair.contract))
-	t.Log(_tokenB.Allowance(*owner, _pair.contract))
-	t.Log(_tokenA.Allowance(*owner, serv.Router().contract))
-	t.Log(_tokenB.Allowance(*owner, serv.Router().contract))
-	//amountB, err := serv.AmountByTokenBFromFloat(1000)
-	//swapTx, _, err := serv.SwapWithTokenB(amountB, 0.065, "43e82a4e3480804654f0bedff00a6721f1720d4f4489fc1c76771e79e2ceef8e")
-	//if err != nil {
-	//	fmt.Printf("%+v", err)
-	//	return
-	//}
-	//t.Log(swapTx.Hash().String())
+	//_tokenA, _ := serv.TokenA()
+	//_tokenB, _ := serv.TokenB()
+	//owner, _ := serv.engine.PrivateKeyToAddress("")
+	//_pair, _ := serv.Pair()
+	//t.Log(_tokenA.Approve(_pair.contract, big.NewInt(0), ""))
+	//t.Log(_tokenB.Approve(_pair.contract, big.NewInt(0), ""))
+	//t.Log(_tokenA.Approve(serv.Router().contract, big.NewInt(0), ""))
+	//t.Log(_tokenB.Approve(serv.Router().contract, big.NewInt(0), ""))
+	//t.Log(_tokenA.Allowance(*owner, _pair.contract))
+	//t.Log(_tokenB.Allowance(*owner, _pair.contract))
+	//t.Log(_tokenA.Allowance(*owner, serv.Router().contract))
+	//t.Log(_tokenB.Allowance(*owner, serv.Router().contract))
+	amountB, err := serv.AmountByTokenBFromFloat(100)
+	swapTx, _, err := serv.SwapTokenB2TokenAWithSupportingFee(amountB, 0.07, "")
+	if err != nil {
+		fmt.Printf("%+v", err)
+		return
+	}
+	t.Log(swapTx.Hash().String())
 }
 
 func TestService_GetAmountsIn(t *testing.T) {

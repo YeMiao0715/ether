@@ -199,6 +199,16 @@ func (i *IRouter) SwapETHForExactTokens(
 	return i.Method("swapETHForExactTokens", amountOut, path, to, deadline)
 }
 
+func (i *IRouter) SwapExactTokensForTokensSupportingFeeOnTransferTokens(
+	amountIn,
+	amountOutMin *big.Int,
+	path []common.Address,
+	to common.Address,
+	deadline *big.Int,
+) ([]byte, error) {
+	return i.Method("swapExactTokensForTokensSupportingFeeOnTransferTokens", amountIn, amountOutMin, path, to, deadline)
+}
+
 func (i *IRouter) Quote(amountA, reserveA, reserveB *big.Int) ([]byte, error) {
 	return i.Method("quote", amountA, reserveA, reserveB)
 }
