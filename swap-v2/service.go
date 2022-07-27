@@ -29,7 +29,15 @@ func NewServiceWithPairAndRouter(
 	engine *ether.Engine,
 	pairContractAddress common.Address, // lp合约地址
 	routerContractAddress common.Address, // 路由合约地址
-) *Service {
+) (*Service, error) {
+
+	if pairContractAddress == common.HexToAddress("") {
+		return nil, errors.New("pair contract address is zero")
+	}
+
+	if routerContractAddress == common.HexToAddress("") {
+		return nil, errors.New("router contract address is zero")
+	}
 	serv := &Service{
 		engine:  engine,
 		pair:    NewPairContract(engine, pairContractAddress),
@@ -39,7 +47,7 @@ func NewServiceWithPairAndRouter(
 		factory: nil,
 	}
 
-	return serv
+	return serv, nil
 }
 
 func NewServiceWithFactory(
@@ -56,7 +64,10 @@ func NewServiceWithFactory(
 	}
 
 	if pairAddress == common.HexToAddress("") {
-		return nil, errors.New("not fount pair address")
+		return nil, errors.New("not fount pair contract address, check tokenA and tokenB contract address")
+	}
+	if routerContractAddress == common.HexToAddress("") {
+		return nil, errors.New("router contract address is zero")
 	}
 
 	serv := &Service{
@@ -151,6 +162,10 @@ func (s *Service) Pair() (*PairContract, error) {
 	}
 
 	return s.pair, nil
+}
+
+func (s *Service) Router() *RouterContract {
+	return s.router
 }
 
 type ServicePriceCoin struct {
@@ -591,8 +606,8 @@ func (s *Service) SwapTokensForExactTokens(amountOut, amountInMax *big.Int, priv
 		amountOut,
 		amountInMax,
 		[]common.Address{
-			_tokanA.Contract(),
 			_tokanB.Contract(),
+			_tokanA.Contract(),
 		},
 		*owner,
 		big.NewInt(time.Now().Unix()+600),
@@ -612,15 +627,10 @@ func (s *Service) SwapWithTokenA(amountA *big.Int, fee float64, privateKey strin
 		return
 	}
 
-	_pair, err := s.Pair()
-	if err != nil {
-		return
-	}
-
 	amountOutDec := decimal.NewFromBigInt(amountOut, 0)
 	amountOutMax := amountOutDec.Mul(decimal.NewFromInt(1).Sub(decimal.NewFromFloat(fee)))
 
-	_, tokenAtx, err = s.WaitApprove(_tokanA, _pair.contract, amountIn, privateKey)
+	_, tokenAtx, err = s.WaitApprove(_tokanA, s.router.contract, amountIn, privateKey)
 	if err != nil {
 		return
 	}
@@ -629,23 +639,14 @@ func (s *Service) SwapWithTokenA(amountA *big.Int, fee float64, privateKey strin
 	return
 }
 
-func (s *Service) Buy(amount *big.Int, fee float64, privateKey string) (swapTx, tokenAtx *types.Transaction, err error) {
-	return s.SwapWithTokenA(amount, fee, privateKey)
-}
-
 // SwapWithTokenB 从B交换A
-func (s *Service) SwapWithTokenB(amountB *big.Int, fee float64, privateKey string) (swapTx, tokenAtx *types.Transaction, err error) {
+func (s *Service) SwapWithTokenB(amountB *big.Int, fee float64, privateKey string) (swapTx, tokenBtx *types.Transaction, err error) {
 	amountIn, amountOut, err := s.GetAmountsIn(amountB)
 	if err != nil {
 		return
 	}
 
-	_tokanA, err := s.TokenA()
-	if err != nil {
-		return
-	}
-
-	_pair, err := s.Pair()
+	_tokanB, err := s.TokenB()
 	if err != nil {
 		return
 	}
@@ -653,17 +654,13 @@ func (s *Service) SwapWithTokenB(amountB *big.Int, fee float64, privateKey strin
 	amountInDec := decimal.NewFromBigInt(amountIn, 0)
 	amountInMax := amountInDec.Mul(decimal.NewFromInt(1).Sub(decimal.NewFromFloat(fee)))
 
-	_, tokenAtx, err = s.WaitApprove(_tokanA, _pair.contract, amountIn, privateKey)
+	_, tokenBtx, err = s.WaitApprove(_tokanB, s.router.contract, amountOut, privateKey)
 	if err != nil {
 		return
 	}
 
 	_, swapTx, err = s.SwapTokensForExactTokens(amountOut, amountInMax.BigInt(), privateKey)
 	return
-}
-
-func (s *Service) Sell(amount *big.Int, fee float64, privateKey string) (swapTx, tokenBtx *types.Transaction, err error) {
-	return s.SwapWithTokenB(amount, fee, privateKey)
 }
 
 // WaitTx 等待交易成功

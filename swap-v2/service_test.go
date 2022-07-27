@@ -3,13 +3,30 @@ package swap_v2
 import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 	"testing"
 )
+
+var serv *Service
+
+func init() {
+	factory := NewFactoryContract(engine, common.HexToAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"))
+	_serv, err := NewServiceWithFactory(engine,
+		factory,
+		router2,
+		//tokenA,
+		tokenB,
+		common.HexToAddress("0xD92FC79A4A713cEB005FD4D6901D527F6C62112A"),
+	)
+	if err != nil {
+		panic(err)
+	}
+	serv = _serv
+}
 
 func TestNewServiceWithPairAndRouter(t *testing.T) {
 	// 0x4E99615101cCBB83A462dC4DE2bc1362EF1365e5 uni
 	//serv := NewServiceWithPairAndRouter(engine, common.HexToAddress("0x4E99615101cCBB83A462dC4DE2bc1362EF1365e5"), router2)
-	serv := NewServiceWithPairAndRouter(engine, pairAddress, router2)
 	t.Log(serv.Symbol())
 	_price, err := serv.Price()
 	t.Log(_price.ToDecimal().String(), err)
@@ -28,22 +45,6 @@ func TestNewServiceWithPairAndRouter(t *testing.T) {
 }
 
 func TestNewServiceWithFactory(t *testing.T) {
-
-	factory := NewFactoryContract(engine, common.HexToAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"))
-
-	t.Log(factory.GetPair(tokenB, common.HexToAddress("0xD92FC79A4A713cEB005FD4D6901D527F6C62112A")))
-	t.Log(factory.GetPair(tokenA, tokenB))
-	//// 0x4E99615101cCBB83A462dC4DE2bc1362EF1365e5 uni
-	serv, err := NewServiceWithFactory(engine,
-		factory,
-		router2,
-		//tokenA,
-		tokenB,
-		common.HexToAddress("0xD92FC79A4A713cEB005FD4D6901D527F6C62112A"),
-	)
-	if err != nil {
-		fmt.Printf("%+v", err)
-	}
 	////serv := NewServiceWithPairAndRouter2(engine, pairAddress, router2)
 	symbol, err := serv.Symbol()
 	if err != nil {
@@ -55,15 +56,6 @@ func TestNewServiceWithFactory(t *testing.T) {
 }
 
 func TestService_AddLiquidityByTokenA(t *testing.T) {
-	factory := NewFactoryContract(engine, common.HexToAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"))
-	serv, err := NewServiceWithFactory(engine,
-		factory,
-		router2,
-		//tokenA,
-		tokenB,
-		common.HexToAddress("0xD92FC79A4A713cEB005FD4D6901D527F6C62112A"),
-	)
-	t.Log(serv, err)
 	amountA, err := serv.AmountByTokenAFromFloat(10000)
 	tx, tokenATx, tokenBTx, err := serv.AddLiquidityWithTokenA(amountA, true, "")
 	if err != nil {
@@ -73,19 +65,6 @@ func TestService_AddLiquidityByTokenA(t *testing.T) {
 }
 
 func TestService_RemoveLiquidityWithPermit(t *testing.T) {
-	factory := NewFactoryContract(engine, common.HexToAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"))
-	serv, err := NewServiceWithFactory(engine,
-		factory,
-		router2,
-		//tokenA,
-		tokenB,
-		common.HexToAddress("0xD92FC79A4A713cEB005FD4D6901D527F6C62112A"),
-	)
-	if err != nil {
-		panic(err)
-	}
-	t.Log(serv.Symbol())
-
 	owner, err := serv.engine.PrivateKeyToAddress("")
 	balance, err := serv.pair.BalanceOf(*owner)
 	t.Log(balance)
@@ -96,55 +75,52 @@ func TestService_RemoveLiquidityWithPermit(t *testing.T) {
 }
 
 func TestService_RemoveLiquidityWithTokenA(t *testing.T) {
-	factory := NewFactoryContract(engine, common.HexToAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"))
-	serv, err := NewServiceWithFactory(engine,
-		factory,
-		router2,
-		//tokenA,
-		tokenB,
-		common.HexToAddress("0xD92FC79A4A713cEB005FD4D6901D527F6C62112A"),
-	)
-	if err != nil {
-		panic(err)
-	}
-
 	amountB, err := serv.AmountByTokenBFromFloat(10000)
 	t.Log(amountB, err)
 	t.Log(serv.RemoveLiquidityWithTokenB(amountB, ""))
 }
 
-func TestService_SwapByTokenA(t *testing.T) {
-	factory := NewFactoryContract(engine, common.HexToAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"))
-	serv, err := NewServiceWithFactory(engine,
-		factory,
-		router2,
-		//tokenA,
-		tokenB,
-		common.HexToAddress("0xD92FC79A4A713cEB005FD4D6901D527F6C62112A"),
-	)
-	t.Log(serv, err)
-
-	amountA, err := serv.AmountByTokenAFromFloat(1)
-	swapTx, _, err := serv.Buy(amountA, 0, "")
-	t.Log(swapTx.Hash().String())
-}
-
-func TestService_SwapByTokenB(t *testing.T) {
-	factory := NewFactoryContract(engine, common.HexToAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"))
-	serv, err := NewServiceWithFactory(engine,
-		factory,
-		router2,
-		//tokenA,
-		tokenB,
-		common.HexToAddress("0xD92FC79A4A713cEB005FD4D6901D527F6C62112A"),
-	)
-	t.Log(serv, err)
-
-	amountB, err := serv.AmountByTokenBFromFloat(1000)
-	swapTx, _, err := serv.Sell(amountB, 0.065, "")
+func TestService_SwapWithTokenA(t *testing.T) {
+	amountA, _ := serv.AmountByTokenAFromFloat(1)
+	swapTx, _, err := serv.SwapWithTokenA(amountA, 0, "")
 	if err != nil {
 		fmt.Printf("%+v", err)
 		return
 	}
 	t.Log(swapTx.Hash().String())
+}
+
+func TestService_SwapWithTokenB(t *testing.T) {
+	_tokenA, _ := serv.TokenA()
+	_tokenB, _ := serv.TokenB()
+	owner, _ := serv.engine.PrivateKeyToAddress("")
+	_pair, _ := serv.Pair()
+	t.Log(_tokenA.Approve(_pair.contract, big.NewInt(0), ""))
+	t.Log(_tokenB.Approve(_pair.contract, big.NewInt(0), ""))
+	t.Log(_tokenA.Approve(serv.Router().contract, big.NewInt(0), ""))
+	t.Log(_tokenB.Approve(serv.Router().contract, big.NewInt(0), ""))
+	t.Log(_tokenA.Allowance(*owner, _pair.contract))
+	t.Log(_tokenB.Allowance(*owner, _pair.contract))
+	t.Log(_tokenA.Allowance(*owner, serv.Router().contract))
+	t.Log(_tokenB.Allowance(*owner, serv.Router().contract))
+	//amountB, err := serv.AmountByTokenBFromFloat(1000)
+	//swapTx, _, err := serv.SwapWithTokenB(amountB, 0.065, "43e82a4e3480804654f0bedff00a6721f1720d4f4489fc1c76771e79e2ceef8e")
+	//if err != nil {
+	//	fmt.Printf("%+v", err)
+	//	return
+	//}
+	//t.Log(swapTx.Hash().String())
+}
+
+func TestService_GetAmountsIn(t *testing.T) {
+	_pair, _ := serv.Pair()
+	amountB, _ := serv.AmountByTokenBFromFloat(1000)
+	amounts := [2]*big.Int{}
+	amounts[len(amounts)-1] = amountB
+	for i := 1; i > 0; i-- {
+		reserve0, reserve1, _, _ := _pair.GetReserves()
+		t.Log(serv.Router().GetAmountIn(amounts[i], reserve0, reserve1))
+	}
+
+	fmt.Println(amounts)
 }
