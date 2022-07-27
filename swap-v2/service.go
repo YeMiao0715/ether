@@ -316,7 +316,7 @@ func (s *Service) GetAmountsIn(outAmount *big.Int) (*big.Int, *big.Int, error) {
 }
 
 // AddLiquidity 添加流动性
-func (s *Service) AddLiquidity(amountA, amountB *big.Int, autoApprove bool, privateKey string) (addLiquidityTx, tokenATx, tokenBTx *types.Transaction, err error) {
+func (s *Service) AddLiquidity(amountA, amountB *big.Int, privateKey string) (addLiquidityTx, tokenATx, tokenBTx *types.Transaction, err error) {
 	_tokenA, err := s.TokenA()
 	if err != nil {
 		return
@@ -364,21 +364,21 @@ func (s *Service) AddLiquidity(amountA, amountB *big.Int, autoApprove bool, priv
 }
 
 // AddLiquidityWithTokenA 添加对应A数量的流动性
-func (s *Service) AddLiquidityWithTokenA(tokenA *big.Int, autoApprove bool, privateKey string) (addLiquidityTx, tokenATx, tokenBTx *types.Transaction, err error) {
+func (s *Service) AddLiquidityWithTokenA(tokenA *big.Int, privateKey string) (addLiquidityTx, tokenATx, tokenBTx *types.Transaction, err error) {
 	inAmount, outAmount, err := s.GetAmountsOut(tokenA)
 	if err != nil {
 		return
 	}
-	return s.AddLiquidity(inAmount, outAmount, autoApprove, privateKey)
+	return s.AddLiquidity(inAmount, outAmount, privateKey)
 }
 
 // AddLiquidityWithTokenB 添加对应B数量的流动性
-func (s *Service) AddLiquidityWithTokenB(tokenB *big.Int, autoApprove bool, privateKey string) (addLiquidityTx, tokenATx, tokenBTx *types.Transaction, err error) {
+func (s *Service) AddLiquidityWithTokenB(tokenB *big.Int, privateKey string) (addLiquidityTx, tokenATx, tokenBTx *types.Transaction, err error) {
 	inAmount, outAmount, err := s.GetAmountsIn(tokenB)
 	if err != nil {
 		return
 	}
-	return s.AddLiquidity(inAmount, outAmount, autoApprove, privateKey)
+	return s.AddLiquidity(inAmount, outAmount, privateKey)
 }
 
 // RemoveLiquidity 移除流动性
