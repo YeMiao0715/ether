@@ -75,6 +75,11 @@ end:
 	return c.rpcClient, c.isWs, nil
 }
 
+func (c *Engine) MustRpcClient() *rpc.Client {
+	rpcClient, _, _ := c.GetRpcClient()
+	return rpcClient
+}
+
 func (c *Engine) GetEthClient() (*ethclient.Client, bool, error) {
 	if c.ethClient == nil {
 		_rpcClient, isWs, err := c.GetRpcClient()
@@ -85,6 +90,14 @@ func (c *Engine) GetEthClient() (*ethclient.Client, bool, error) {
 	}
 
 	return c.ethClient, c.isWs, nil
+}
+
+func (c *Engine) MustEthClient() *ethclient.Client {
+	if c.ethClient == nil {
+		_rpcClient, _, _ := c.GetRpcClient()
+		c.ethClient = ethclient.NewClient(_rpcClient)
+	}
+	return c.ethClient
 }
 
 func (c *Engine) SetUrl(rpc string, ws string) {
@@ -108,13 +121,25 @@ func (c *Engine) Logger() *zap.Logger {
 	return c.logger
 }
 
-func (c *Engine) GetNonce(address common.Address) (uint64, error) {
+func (c *Engine) GetPendingNonce(address common.Address) (uint64, error) {
 	client, _, err := c.GetEthClient()
 	if err != nil {
 		return 0, errors.Wrap(err, "get nonce err")
 	}
 
 	return client.PendingNonceAt(context.Background(), address)
+}
+
+func (c *Engine) GetNonce(address common.Address) (uint64, error) {
+	client, _, err := c.GetEthClient()
+	if err != nil {
+		return 0, errors.Wrap(err, "get nonce err")
+	}
+	lastBlockNumber, err := c.GetBlockNumber()
+	if err != nil {
+		return 0, err
+	}
+	return client.NonceAt(context.Background(), address, decimal.NewFromInt(int64(lastBlockNumber)).BigInt())
 }
 
 func (c *Engine) GetChainId() (*big.Int, error) {
@@ -224,7 +249,7 @@ func (c *Engine) BuildTxByContractWithPrivateKey(contract common.Address, data [
 }
 
 func (c *Engine) Singer() (types.Signer, error) {
-	chianId, err := c.GetChainId()
+	chain, err := c.GetChainId()
 	if err != nil {
 		return nil, err
 	}
@@ -232,11 +257,11 @@ func (c *Engine) Singer() (types.Signer, error) {
 
 	switch c.txType {
 	case EIP155Signer:
-		signer = types.NewEIP2930Signer(chianId)
+		signer = types.NewEIP2930Signer(chain)
 	case EIP2930Signer:
-		signer = types.NewLondonSigner(chianId)
+		signer = types.NewLondonSigner(chain)
 	default:
-		signer = types.NewEIP155Signer(chianId)
+		signer = types.NewEIP155Signer(chain)
 	}
 
 	return signer, nil
@@ -462,4 +487,17 @@ func (c *Engine) GetBlockNumber() (uint64, error) {
 		return 0, err
 	}
 	return blockNumber, nil
+}
+
+func (c *Engine) IsContract(address common.Address) (bool, error) {
+	b, err := c.ethClient.PendingCodeAt(context.Background(), address)
+	if err != nil {
+		return false, err
+	}
+
+	if len(b) == 0 {
+		return false, nil
+	}
+
+	return true, nil
 }
