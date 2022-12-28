@@ -490,7 +490,11 @@ func (c *Engine) GetBlockNumber() (uint64, error) {
 }
 
 func (c *Engine) IsContract(address common.Address) (bool, error) {
-	b, err := c.ethClient.PendingCodeAt(context.Background(), address)
+	client, _, err := c.GetEthClient()
+	if err != nil {
+		return false, err
+	}
+	b, err := client.PendingCodeAt(context.Background(), address)
 	if err != nil {
 		return false, err
 	}

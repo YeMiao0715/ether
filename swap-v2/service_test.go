@@ -10,18 +10,41 @@ import (
 var serv *Service
 
 func init() {
-	factory := NewFactoryContract(engine, common.HexToAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"))
-	_serv, err := NewServiceWithFactory(engine,
-		factory,
-		router2,
-		//tokenA,
-		tokenB,
-		common.HexToAddress("0xD92FC79A4A713cEB005FD4D6901D527F6C62112A"),
-	)
+	_serv, err := NewServiceWithRouter(engine, router2)
 	if err != nil {
 		panic(err)
 	}
+
+	//factory := NewFactoryContract(engine, common.HexToAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"))
+	//_serv, err := NewServiceWithFactory(engine,
+	//	factory,
+	//	router2,
+	//	//tokenA,
+	//	tokenB,
+	//	common.HexToAddress("0xD92FC79A4A713cEB005FD4D6901D527F6C62112A"),
+	//)
+	//if err != nil {
+	//	panic(err)
+	//}
 	serv = _serv
+}
+
+func TestService_NewServiceForTokenAndWETH(t *testing.T) {
+	// 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45 goerli swapRouter2
+	tokenA := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
+	//tokenB := common.HexToAddress("")
+	//serv.MustFactory().GetPair(tokenA, tokenB)
+	//serv.MustFactory().
+
+	weth2Usdt, err := serv.NewServiceForTokenAndWETH(tokenA)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(weth2Usdt.Symbol())
+	fmt.Println(weth2Usdt.tokenA.Contract())
+	fmt.Println(weth2Usdt.tokenB.Contract())
+	fmt.Println(weth2Usdt.Price())
+
 }
 
 func TestNewServiceWithPairAndRouter(t *testing.T) {

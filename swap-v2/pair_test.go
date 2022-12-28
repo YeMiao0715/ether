@@ -1,10 +1,8 @@
 package swap_v2
 
 import (
-	"github.com/YeMiao0715/ether"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/shopspring/decimal"
-	"go.uber.org/zap"
 	"math/big"
 	"testing"
 )
@@ -14,9 +12,6 @@ var pair *Pair
 var pairAddress = common.HexToAddress("0xdf5B1f505837D763B6AA98C003Df3C53625239AB")
 
 func init() {
-	logger, _ := zap.NewDevelopment()
-	engine = ether.NewEngine(logger, "https://rinkeby.infura.io/v3/14e5c24b98634138a9127fc8db299970", "")
-	engine.SetGasPrice(decimal.New(10, 9).BigInt())
 	pair = NewPair(engine)
 }
 

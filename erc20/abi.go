@@ -27,6 +27,11 @@ func (e *Erc20Abi) GetAbi() (*abi.ABI, error) {
 	return e.abi, nil
 }
 
+func (e *Erc20Abi) MustAbi() *abi.ABI {
+	abi, _ := e.GetAbi()
+	return abi
+}
+
 func (e *Erc20Abi) Method(fn string, param ...interface{}) ([]byte, error) {
 	erc20Abi, err := e.GetAbi()
 	if err != nil {

@@ -45,6 +45,19 @@ func (e *Router) WETH(contract common.Address) (common.Address, error) {
 	return e.iRouter.UnpackWETH(resb)
 }
 
+func (e *Router) WETH9(contract common.Address) (common.Address, error) {
+	b, err := e.iRouter.WETH()
+	if err != nil {
+		return common.Address{}, err
+	}
+	resb, err := e.engine.CallContract(contract, b)
+	if err != nil {
+		return common.Address{}, err
+	}
+
+	return e.iRouter.UnpackWETH(resb)
+}
+
 func (e *Router) AddLiquidity(
 	contract common.Address,
 	tokenA,

@@ -25,6 +25,31 @@ type Service struct {
 	symbol  *string
 }
 
+func NewServiceWithRouter(engine *ether.Engine, swapRouterV2 common.Address) (*Service, error) {
+	if swapRouterV2 == common.HexToAddress("") {
+		return nil, errors.New("router contract address is zero")
+	}
+
+	serv := &Service{
+		engine:  engine,
+		pair:    nil,
+		router:  NewRouterContract(engine, swapRouterV2),
+		tokenA:  nil,
+		tokenB:  nil,
+		factory: nil,
+		symbol:  nil,
+	}
+
+	factory, err := serv.Router().Factory()
+	if err != nil {
+		return nil, err
+	}
+
+	serv.factory = NewFactoryContract(engine, factory)
+
+	return serv, nil
+}
+
 func NewServiceWithPairAndRouter(
 	engine *ether.Engine,
 	pairContractAddress common.Address, // lp合约地址
@@ -156,6 +181,11 @@ func (s *Service) Factory() (*FactoryContract, error) {
 	return s.factory, nil
 }
 
+func (s *Service) MustFactory() *FactoryContract {
+	factory, _ := s.Factory()
+	return factory
+}
+
 func (s *Service) Pair() (*PairContract, error) {
 	if s.pair == nil {
 		return nil, errors.New("pair is nil")
@@ -166,6 +196,38 @@ func (s *Service) Pair() (*PairContract, error) {
 
 func (s *Service) Router() *RouterContract {
 	return s.router
+}
+
+func (s *Service) NewServiceForTokenAndWETH(token common.Address) (*Service, error) {
+	WETHContractAddress, err := s.Router().WETH()
+	if err != nil {
+		return nil, err
+	}
+
+	return s.NewServiceForTokenAAndTokenB(WETHContractAddress, token)
+}
+
+func (s *Service) NewServiceForTokenAAndTokenB(tokenA, tokenB common.Address) (*Service, error) {
+	service, err := NewServiceWithRouter(s.engine, s.router.contract)
+	if err != nil {
+		return nil, err
+	}
+
+	factoryContractAddress, err := service.Router().Factory()
+	if err != nil {
+		return nil, err
+	}
+
+	service.tokenA = erc20.NewErc20WithContract(s.engine, tokenA)
+	service.tokenB = erc20.NewErc20WithContract(s.engine, tokenB)
+	service.factory = NewFactoryContract(s.engine, factoryContractAddress)
+	pair, err := service.MustFactory().GetPair(service.tokenA.Contract(), service.tokenB.Contract())
+	if err != nil {
+		return nil, err
+	}
+	service.pair = NewPairContract(s.engine, pair)
+
+	return service, nil
 }
 
 type ServicePriceCoin struct {
@@ -240,13 +302,31 @@ func (s *Service) Price() (*ServicePrice, error) {
 	if err != nil {
 		return nil, err
 	}
+	inAmount := decimal.New(1, int32(decimalsByA)).BigInt()
+	return s.PriceOfTokenA(inAmount)
+}
+
+// PriceOfTokenA 价格 {amount} tokenA: %d tokenB
+func (s *Service) PriceOfTokenA(inAmount *big.Int) (*ServicePrice, error) {
+	_tokenA, err := s.TokenA()
+	if err != nil {
+		return nil, err
+	}
+	decimalsByA, err := _tokenA.Decimals()
+	if err != nil {
+		return nil, err
+	}
 	symbolByA, err := _tokenA.Symbol()
 	if err != nil {
 		return nil, err
 	}
-
-	inAmount := decimal.New(1, int32(decimalsByA)).BigInt()
-	_, outAmount, err := s.GetAmountsOut(inAmount)
+	outAmount := big.NewInt(0)
+	if inAmount.Int64() != 0 {
+		_, outAmount, err = s.GetAmountsOut(inAmount)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	_tokenB, _ := s.TokenB()
 	decimalsByB, err := _tokenB.Decimals()

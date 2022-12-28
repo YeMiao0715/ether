@@ -11,7 +11,7 @@ import (
 
 func main() {
 	logger, _ := zap.NewDevelopment()
-	engine := ether.NewEngine(logger, "http://120.24.95.205:8545", "ws://120.24.95.205:8546")
+	engine := ether.NewEngine(logger, "http://8.218.112.195:8545", "")
 	engine.SetGasPrice(decimal.New(1, 9).BigInt())
 	client, _, err := engine.GetEthClient()
 	if err != nil {
