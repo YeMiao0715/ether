@@ -2,6 +2,7 @@ package ether
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 )
@@ -55,22 +56,11 @@ func (t Transaction) IsContract(engine *Engine) (isContract bool, code []byte, e
 	return
 }
 
-func (t Transaction) ContractType(engine *Engine) {
-	//isContract, code, err := t.IsContract(engine)
-	//vm.Contract{}
-}
-
-func (t Transaction) AsMessage(engine *Engine) (*types.Message, error) {
+func (t Transaction) From(engine *Engine) (common.Address, error) {
 	transaction, _ := t.Transaction()
-
 	singer, err := engine.Singer()
 	if err != nil {
-		return nil, err
+		return common.Address{}, err
 	}
-	message, err := transaction.AsMessage(singer, transaction.GasPrice())
-	if err != nil {
-		return nil, err
-	}
-
-	return &message, nil
+	return singer.Sender(transaction)
 }
