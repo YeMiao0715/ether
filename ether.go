@@ -42,11 +42,11 @@ type Engine struct {
 
 // NewEngine 新建一个链接引擎，全局唯一
 func NewEngine(logger *zap.Logger, rpcUrl string, wsUrl string) *Engine {
-	return &Engine{logger: logger, rpcUrl: rpcUrl, wsUrl: wsUrl, gasPrice: decimal.New(2, 9).BigInt(), txType: 0, gasLimitOffset: 0}
+	return &Engine{logger: logger, rpcUrl: rpcUrl, wsUrl: wsUrl, txType: 2, gasLimitOffset: 0, autoGasPrice: true}
 }
 
 func NewEngineWithType(logger *zap.Logger, rpcUrl string, wsUrl string, txType EngineType) *Engine {
-	return &Engine{logger: logger, rpcUrl: rpcUrl, wsUrl: wsUrl, gasPrice: decimal.New(2, 9).BigInt(), txType: txType, gasLimitOffset: 0}
+	return &Engine{logger: logger, rpcUrl: rpcUrl, wsUrl: wsUrl, txType: txType, gasLimitOffset: 0, autoGasPrice: true}
 }
 
 func (c *Engine) GetRpcClient() (*rpc.Client, bool, error) {
@@ -178,6 +178,9 @@ func (c *Engine) GasTipCapPrice() *big.Int {
 		baseGasTipPrice, _ := c.ethClient.SuggestGasTipCap(context.Background())
 		c.gasTipCapPrice = baseGasTipPrice
 	}
+	if c.gasTipCapPrice == nil {
+		return c.gasPrice
+	}
 	return c.gasTipCapPrice
 }
 
@@ -279,7 +282,7 @@ func (c *Engine) Singer() (types.Signer, error) {
 	case EIP155Signer:
 		signer = types.NewEIP155Signer(chain)
 	case EIP2930Signer:
-		signer = types.NewEIP2930Signer(chain)
+		signer = types.NewLondonSigner(chain)
 	default:
 		signer = types.NewEIP155Signer(chain)
 	}
@@ -471,8 +474,7 @@ func (c *Engine) TransferEth(to common.Address, value *big.Int, privateKey strin
 	if err != nil {
 		return "", nil, err
 	}
-
-	buildTx, err := c.BuildTx(*sender, to, gas, c.gasPrice, c.GasTipCapPrice(), value, nil, nil)
+	buildTx, err := c.BuildTx(*sender, to, gas, c.GasPrice(), c.GasTipCapPrice(), value, nil, nil)
 	if err != nil {
 		return "", nil, err
 	}
@@ -490,7 +492,7 @@ func (c *Engine) TransferEthWithNonce(to common.Address, value *big.Int, private
 		return "", nil, err
 	}
 
-	buildTx, err := c.BuildTx(*sender, to, gas, c.gasPrice, c.GasTipCapPrice(), value, nil, setNonce)
+	buildTx, err := c.BuildTx(*sender, to, gas, c.GasPrice(), c.GasTipCapPrice(), value, nil, setNonce)
 	if err != nil {
 		return "", nil, err
 	}

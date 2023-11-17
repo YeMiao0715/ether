@@ -16,7 +16,7 @@ func init() {
 	logger, _ := zap.NewDevelopment()
 	engine = NewEngine(logger, "http://127.0.0.1:8545", "")
 	//engine = NewEngine(logger, "https://data-seed-prebsc-1-s1.binance.org:8545/", "")
-	engine.SetGasPrice(decimal.New(10, 9).BigInt())
+	//engine.SetGasPrice(decimal.New(10, 9).BigInt())
 }
 
 func TestClient_GetEthClient(t *testing.T) {
@@ -40,7 +40,7 @@ func TestEngine_TransactionByHash(t *testing.T) {
 }
 
 func TestEngine_TransferEth(t *testing.T) {
-	sender, err := engine.PrivateKeyToAddress("0x9d3f5dd0dd61eff0c54bea1b32234220d87135f231a5633f6bcb6df0aaa1acf4")
+	sender, err := engine.PrivateKeyToAddress("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80")
 	if err != nil {
 		fmt.Printf("%+v", err)
 		return
@@ -53,7 +53,7 @@ func TestEngine_TransferEth(t *testing.T) {
 
 	fmt.Println(balance)
 
-	hash, _, err := engine.TransferEth(common.HexToAddress("0x06eea78c7722d79b5B4B4681cB0E5798146f193d"), decimal.New(1, 18).BigInt(), "0x9d3f5dd0dd61eff0c54bea1b32234220d87135f231a5633f6bcb6df0aaa1acf4")
+	hash, _, err := engine.TransferEth(common.HexToAddress("0x06eea78c7722d79b5B4B4681cB0E5798146f193d"), decimal.New(1, 18).BigInt(), "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80")
 	if err != nil {
 		fmt.Printf("%+v", err)
 	} else {
