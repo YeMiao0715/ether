@@ -29,6 +29,8 @@ type Engine struct {
 	ethClient      *ethclient.Client
 	chainId        *big.Int
 	gasPrice       *big.Int
+	gasTipCapPrice *big.Int
+	autoGasPrice   bool
 	gasLimitOffset uint64
 
 	isWs   bool   // 当前是否为ws链接，当为ws链接时可以使用一些订阅事件
@@ -107,6 +109,12 @@ func (c *Engine) SetUrl(rpc string, ws string) {
 
 func (c *Engine) SetGasPrice(gasPrice *big.Int) {
 	c.gasPrice = gasPrice
+	c.gasTipCapPrice = gasPrice
+	c.autoGasPrice = false
+}
+
+func (c *Engine) AutoGasPrice(enable bool) {
+	c.autoGasPrice = enable
 }
 
 func (c *Engine) SetGasLimitOffset(offset uint64) {
@@ -158,10 +166,22 @@ func (c *Engine) GetChainId() (*big.Int, error) {
 }
 
 func (c *Engine) GasPrice() *big.Int {
+	if c.autoGasPrice {
+		baseGasPrice, _ := c.ethClient.SuggestGasPrice(context.Background())
+		c.gasPrice = baseGasPrice
+	}
 	return c.gasPrice
 }
 
-func (c *Engine) BuildTx(from, to common.Address, gas uint64, gasPrice *big.Int, value *big.Int, data []byte, setNonce *uint64) (*types.Transaction, error) {
+func (c *Engine) GasTipCapPrice() *big.Int {
+	if c.autoGasPrice {
+		baseGasTipPrice, _ := c.ethClient.SuggestGasTipCap(context.Background())
+		c.gasTipCapPrice = baseGasTipPrice
+	}
+	return c.gasTipCapPrice
+}
+
+func (c *Engine) BuildTx(from, to common.Address, gas uint64, gasPrice *big.Int, gasTipCap *big.Int, value *big.Int, data []byte, setNonce *uint64) (*types.Transaction, error) {
 	var nonce uint64 = 0
 	if setNonce == nil {
 		_nonce, err := c.GetNonce(from)
@@ -184,7 +204,7 @@ func (c *Engine) BuildTx(from, to common.Address, gas uint64, gasPrice *big.Int,
 			ChainID:    chainId,
 			Nonce:      nonce,
 			GasTipCap:  gasPrice,
-			GasFeeCap:  gasPrice,
+			GasFeeCap:  gasTipCap,
 			Gas:        gas + c.gasLimitOffset,
 			To:         &to,
 			Value:      value,
@@ -213,7 +233,7 @@ func (c *Engine) BuildTx(from, to common.Address, gas uint64, gasPrice *big.Int,
 }
 
 func (c *Engine) BuildTxByContractWithGas(sender, contract common.Address, gas uint64, data []byte) (*types.Transaction, error) {
-	buildTx, err := c.BuildTx(sender, contract, gas, c.GasPrice(), nil, data, nil)
+	buildTx, err := c.BuildTx(sender, contract, gas, c.GasPrice(), c.GasTipCapPrice(), nil, data, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +245,7 @@ func (c *Engine) BuildTxByContract(sender, contract common.Address, data []byte)
 	if err != nil {
 		return nil, err
 	}
-	buildTx, err := c.BuildTx(sender, contract, gas, c.GasPrice(), nil, data, nil)
+	buildTx, err := c.BuildTx(sender, contract, gas, c.GasPrice(), c.GasTipCapPrice(), nil, data, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +261,7 @@ func (c *Engine) BuildTxByContractWithPrivateKey(contract common.Address, data [
 	if err != nil {
 		return nil, err
 	}
-	buildTx, err := c.BuildTx(*sender, contract, gas, c.GasPrice(), nil, data, nil)
+	buildTx, err := c.BuildTx(*sender, contract, gas, c.GasPrice(), c.GasTipCapPrice(), nil, data, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -257,9 +277,9 @@ func (c *Engine) Singer() (types.Signer, error) {
 
 	switch c.txType {
 	case EIP155Signer:
-		signer = types.NewEIP2930Signer(chain)
+		signer = types.NewEIP155Signer(chain)
 	case EIP2930Signer:
-		signer = types.NewLondonSigner(chain)
+		signer = types.NewEIP2930Signer(chain)
 	default:
 		signer = types.NewEIP155Signer(chain)
 	}
@@ -277,8 +297,8 @@ func (c *Engine) EstimateGas(from, to common.Address, value *big.Int, data []byt
 		From:       from,
 		To:         &to,
 		Gas:        0,
-		GasPrice:   c.gasPrice,
-		GasFeeCap:  c.gasPrice,
+		GasPrice:   c.GasPrice(),
+		GasFeeCap:  c.GasPrice(),
 		GasTipCap:  c.gasPrice,
 		Value:      value,
 		Data:       data,
@@ -452,7 +472,7 @@ func (c *Engine) TransferEth(to common.Address, value *big.Int, privateKey strin
 		return "", nil, err
 	}
 
-	buildTx, err := c.BuildTx(*sender, to, gas, c.gasPrice, value, nil, nil)
+	buildTx, err := c.BuildTx(*sender, to, gas, c.gasPrice, c.GasTipCapPrice(), value, nil, nil)
 	if err != nil {
 		return "", nil, err
 	}
@@ -470,7 +490,7 @@ func (c *Engine) TransferEthWithNonce(to common.Address, value *big.Int, private
 		return "", nil, err
 	}
 
-	buildTx, err := c.BuildTx(*sender, to, gas, c.gasPrice, value, nil, setNonce)
+	buildTx, err := c.BuildTx(*sender, to, gas, c.gasPrice, c.GasTipCapPrice(), value, nil, setNonce)
 	if err != nil {
 		return "", nil, err
 	}
