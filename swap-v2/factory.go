@@ -9,18 +9,18 @@ import (
 
 type Factory struct {
 	engine   *ether.Engine
-	iFactory *IFactory
+	IFactory *IFactory
 }
 
 func NewFactory(engine *ether.Engine) *Factory {
 	return &Factory{
 		engine:   engine,
-		iFactory: &IFactory{},
+		IFactory: &IFactory{},
 	}
 }
 
 func (f *Factory) FeeTo(contract common.Address) (common.Address, error) {
-	b, err := f.iFactory.FeeTo()
+	b, err := f.IFactory.FeeTo()
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -29,11 +29,11 @@ func (f *Factory) FeeTo(contract common.Address) (common.Address, error) {
 		return common.Address{}, err
 	}
 
-	return f.iFactory.UnpackFeeTo(resb)
+	return f.IFactory.UnpackFeeTo(resb)
 }
 
 func (f *Factory) FeeToSetter(contract common.Address) (common.Address, error) {
-	b, err := f.iFactory.FeeToSetter()
+	b, err := f.IFactory.FeeToSetter()
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -42,11 +42,11 @@ func (f *Factory) FeeToSetter(contract common.Address) (common.Address, error) {
 		return common.Address{}, err
 	}
 
-	return f.iFactory.UnpackFeeToSetter(resb)
+	return f.IFactory.UnpackFeeToSetter(resb)
 }
 
 func (f *Factory) GetPair(contract, tokenA, tokenB common.Address) (common.Address, error) {
-	b, err := f.iFactory.GetPair(tokenA, tokenB)
+	b, err := f.IFactory.GetPair(tokenA, tokenB)
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -55,11 +55,11 @@ func (f *Factory) GetPair(contract, tokenA, tokenB common.Address) (common.Addre
 		return common.Address{}, err
 	}
 
-	return f.iFactory.UnpackGetPair(resb)
+	return f.IFactory.UnpackGetPair(resb)
 }
 
 func (f *Factory) AllPairs(contract common.Address, index *big.Int) (common.Address, error) {
-	b, err := f.iFactory.AllPairs(index)
+	b, err := f.IFactory.AllPairs(index)
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -68,11 +68,11 @@ func (f *Factory) AllPairs(contract common.Address, index *big.Int) (common.Addr
 		return common.Address{}, err
 	}
 
-	return f.iFactory.UnpackAllPairs(resb)
+	return f.IFactory.UnpackAllPairs(resb)
 }
 
 func (f *Factory) AllPairsLength(contract common.Address) (*big.Int, error) {
-	b, err := f.iFactory.AllPairsLength()
+	b, err := f.IFactory.AllPairsLength()
 	if err != nil {
 		return nil, err
 	}
@@ -81,11 +81,11 @@ func (f *Factory) AllPairsLength(contract common.Address) (*big.Int, error) {
 		return nil, err
 	}
 
-	return f.iFactory.UnpackAllPairsLength(resb)
+	return f.IFactory.UnpackAllPairsLength(resb)
 }
 
 func (f *Factory) CreatePair(contract, tokenA, tokenB common.Address, privateKey string) (string, *types.Transaction, error) {
-	abiData, err := f.iFactory.CreatePair(tokenA, tokenB)
+	abiData, err := f.IFactory.CreatePair(tokenA, tokenB)
 	if err != nil {
 		return "", nil, err
 	}
@@ -99,7 +99,7 @@ func (f *Factory) CreatePair(contract, tokenA, tokenB common.Address, privateKey
 }
 
 func (f *Factory) SetFeeTo(contract, addr common.Address, privateKey string) (string, *types.Transaction, error) {
-	abiData, err := f.iFactory.SetFeeTo(addr)
+	abiData, err := f.IFactory.SetFeeTo(addr)
 	if err != nil {
 		return "", nil, err
 	}
@@ -113,7 +113,7 @@ func (f *Factory) SetFeeTo(contract, addr common.Address, privateKey string) (st
 }
 
 func (f *Factory) SetFeeToSetter(contract, addr common.Address, privateKey string) (string, *types.Transaction, error) {
-	abiData, err := f.iFactory.SetFeeToSetter(addr)
+	abiData, err := f.IFactory.SetFeeToSetter(addr)
 	if err != nil {
 		return "", nil, err
 	}

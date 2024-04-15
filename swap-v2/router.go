@@ -9,18 +9,18 @@ import (
 
 type Router struct {
 	engine  *ether.Engine
-	iRouter *IRouter
+	IRouter *IRouter
 }
 
 func NewRouter2(engine *ether.Engine) *Router {
 	return &Router{
 		engine:  engine,
-		iRouter: &IRouter{},
+		IRouter: &IRouter{},
 	}
 }
 
 func (e *Router) Factory(contract common.Address) (common.Address, error) {
-	b, err := e.iRouter.Factory()
+	b, err := e.IRouter.Factory()
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -29,11 +29,11 @@ func (e *Router) Factory(contract common.Address) (common.Address, error) {
 		return common.Address{}, err
 	}
 
-	return e.iRouter.UnpackFactory(resb)
+	return e.IRouter.UnpackFactory(resb)
 }
 
 func (e *Router) WETH(contract common.Address) (common.Address, error) {
-	b, err := e.iRouter.WETH()
+	b, err := e.IRouter.WETH()
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -42,11 +42,11 @@ func (e *Router) WETH(contract common.Address) (common.Address, error) {
 		return common.Address{}, err
 	}
 
-	return e.iRouter.UnpackWETH(resb)
+	return e.IRouter.UnpackWETH(resb)
 }
 
 func (e *Router) WETH9(contract common.Address) (common.Address, error) {
-	b, err := e.iRouter.WETH()
+	b, err := e.IRouter.WETH()
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -55,7 +55,7 @@ func (e *Router) WETH9(contract common.Address) (common.Address, error) {
 		return common.Address{}, err
 	}
 
-	return e.iRouter.UnpackWETH(resb)
+	return e.IRouter.UnpackWETH(resb)
 }
 
 func (e *Router) AddLiquidity(
@@ -70,7 +70,7 @@ func (e *Router) AddLiquidity(
 	deadline *big.Int,
 	privateKey string,
 ) (string, *types.Transaction, error) {
-	abiData, err := e.iRouter.AddLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin, to, deadline)
+	abiData, err := e.IRouter.AddLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin, to, deadline)
 	if err != nil {
 		return "", nil, err
 	}
@@ -93,7 +93,7 @@ func (e *Router) AddLiquidityETH(
 	deadline *big.Int,
 	privateKey string,
 ) (string, *types.Transaction, error) {
-	abiData, err := e.iRouter.AddLiquidityETH(token, amountTokenDesired, amountTokenMin, amountETHMin, to, deadline)
+	abiData, err := e.IRouter.AddLiquidityETH(token, amountTokenDesired, amountTokenMin, amountETHMin, to, deadline)
 	if err != nil {
 		return "", nil, err
 	}
@@ -117,7 +117,7 @@ func (e *Router) RemoveLiquidity(
 	deadline *big.Int,
 	privateKey string,
 ) (string, *types.Transaction, error) {
-	abiData, err := e.iRouter.RemoveLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline)
+	abiData, err := e.IRouter.RemoveLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline)
 	if err != nil {
 		return "", nil, err
 	}
@@ -140,7 +140,7 @@ func (e *Router) RemoveLiquidityETH(
 	deadline *big.Int,
 	privateKey string,
 ) (string, *types.Transaction, error) {
-	abiData, err := e.iRouter.RemoveLiquidityETH(token, liquidity, amountTokenMin, amountETHMin, to, deadline)
+	abiData, err := e.IRouter.RemoveLiquidityETH(token, liquidity, amountTokenMin, amountETHMin, to, deadline)
 	if err != nil {
 		return "", nil, err
 	}
@@ -168,7 +168,7 @@ func (e *Router) RemoveLiquidityWithPermit(
 	s [32]byte,
 	privateKey string,
 ) (string, *types.Transaction, error) {
-	abiData, err := e.iRouter.RemoveLiquidityWithPermit(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline, approveMax, v, r, s)
+	abiData, err := e.IRouter.RemoveLiquidityWithPermit(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline, approveMax, v, r, s)
 	if err != nil {
 		return "", nil, err
 	}
@@ -195,7 +195,7 @@ func (e *Router) RemoveLiquidityETHWithPermit(
 	s [32]byte,
 	privateKey string,
 ) (string, *types.Transaction, error) {
-	abiData, err := e.iRouter.RemoveLiquidityETHWithPermit(token, liquidity, amountTokenMin, amountETHMin, to, deadline, approveMax, v, r, s)
+	abiData, err := e.IRouter.RemoveLiquidityETHWithPermit(token, liquidity, amountTokenMin, amountETHMin, to, deadline, approveMax, v, r, s)
 	if err != nil {
 		return "", nil, err
 	}
@@ -217,7 +217,7 @@ func (e *Router) SwapExactTokensForTokens(
 	deadline *big.Int,
 	privateKey string,
 ) (string, *types.Transaction, error) {
-	abiData, err := e.iRouter.SwapExactTokensForTokens(amountIn, amountOutMin, path, to, deadline)
+	abiData, err := e.IRouter.SwapExactTokensForTokens(amountIn, amountOutMin, path, to, deadline)
 	if err != nil {
 		return "", nil, err
 	}
@@ -239,7 +239,7 @@ func (e *Router) SwapTokensForExactTokens(
 	deadline *big.Int,
 	privateKey string,
 ) (string, *types.Transaction, error) {
-	abiData, err := e.iRouter.SwapTokensForExactTokens(amountOut, amountInMax, path, to, deadline)
+	abiData, err := e.IRouter.SwapTokensForExactTokens(amountOut, amountInMax, path, to, deadline)
 	if err != nil {
 		return "", nil, err
 	}
@@ -260,7 +260,7 @@ func (e *Router) SwapExactETHForTokens(
 	deadline *big.Int,
 	privateKey string,
 ) (string, *types.Transaction, error) {
-	abiData, err := e.iRouter.SwapExactETHForTokens(amountOutMin, path, to, deadline)
+	abiData, err := e.IRouter.SwapExactETHForTokens(amountOutMin, path, to, deadline)
 	if err != nil {
 		return "", nil, err
 	}
@@ -282,7 +282,7 @@ func (e *Router) SwapTokensForExactETH(
 	deadline *big.Int,
 	privateKey string,
 ) (string, *types.Transaction, error) {
-	abiData, err := e.iRouter.SwapTokensForExactETH(amountOut, amountInMax, path, to, deadline)
+	abiData, err := e.IRouter.SwapTokensForExactETH(amountOut, amountInMax, path, to, deadline)
 	if err != nil {
 		return "", nil, err
 	}
@@ -304,7 +304,7 @@ func (e *Router) SwapExactTokensForETH(
 	deadline *big.Int,
 	privateKey string,
 ) (string, *types.Transaction, error) {
-	abiData, err := e.iRouter.SwapExactTokensForETH(amountIn, amountOutMin, path, to, deadline)
+	abiData, err := e.IRouter.SwapExactTokensForETH(amountIn, amountOutMin, path, to, deadline)
 	if err != nil {
 		return "", nil, err
 	}
@@ -325,7 +325,7 @@ func (e *Router) SwapETHForExactTokens(
 	deadline *big.Int,
 	privateKey string,
 ) (string, *types.Transaction, error) {
-	abiData, err := e.iRouter.SwapETHForExactTokens(amountOut, path, to, deadline)
+	abiData, err := e.IRouter.SwapETHForExactTokens(amountOut, path, to, deadline)
 	if err != nil {
 		return "", nil, err
 	}
@@ -347,7 +347,7 @@ func (e *Router) SwapExactTokensForTokensSupportingFeeOnTransferTokens(
 	deadline *big.Int,
 	privateKey string,
 ) (string, *types.Transaction, error) {
-	abiData, err := e.iRouter.SwapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn, amountOutMin, path, to, deadline)
+	abiData, err := e.IRouter.SwapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn, amountOutMin, path, to, deadline)
 	if err != nil {
 		return "", nil, err
 	}
@@ -361,7 +361,7 @@ func (e *Router) SwapExactTokensForTokensSupportingFeeOnTransferTokens(
 }
 
 func (e *Router) Quote(contract common.Address, amountA, reserveA, reserveB *big.Int) (*big.Int, error) {
-	b, err := e.iRouter.Quote(amountA, reserveA, reserveB)
+	b, err := e.IRouter.Quote(amountA, reserveA, reserveB)
 	if err != nil {
 		return nil, err
 	}
@@ -370,11 +370,11 @@ func (e *Router) Quote(contract common.Address, amountA, reserveA, reserveB *big
 		return nil, err
 	}
 
-	return e.iRouter.UnpackGetAmountOut(resb)
+	return e.IRouter.UnpackGetAmountOut(resb)
 }
 
 func (e *Router) GetAmountOut(contract common.Address, amountIn, reserveIn, reserveOut *big.Int) (*big.Int, error) {
-	b, err := e.iRouter.GetAmountOut(amountIn, reserveIn, reserveOut)
+	b, err := e.IRouter.GetAmountOut(amountIn, reserveIn, reserveOut)
 	if err != nil {
 		return nil, err
 	}
@@ -383,11 +383,11 @@ func (e *Router) GetAmountOut(contract common.Address, amountIn, reserveIn, rese
 		return nil, err
 	}
 
-	return e.iRouter.UnpackGetAmountOut(resb)
+	return e.IRouter.UnpackGetAmountOut(resb)
 }
 
 func (e *Router) GetAmountIn(contract common.Address, amountOut, reserveIn, reserveOut *big.Int) (*big.Int, error) {
-	b, err := e.iRouter.GetAmountIn(amountOut, reserveIn, reserveOut)
+	b, err := e.IRouter.GetAmountIn(amountOut, reserveIn, reserveOut)
 	if err != nil {
 		return nil, err
 	}
@@ -396,11 +396,11 @@ func (e *Router) GetAmountIn(contract common.Address, amountOut, reserveIn, rese
 		return nil, err
 	}
 
-	return e.iRouter.UnpackGetAmountIn(resb)
+	return e.IRouter.UnpackGetAmountIn(resb)
 }
 
 func (e *Router) GetAmountsOut(contract common.Address, amountIn *big.Int, path []common.Address) ([]*big.Int, error) {
-	b, err := e.iRouter.GetAmountsOut(amountIn, path)
+	b, err := e.IRouter.GetAmountsOut(amountIn, path)
 	if err != nil {
 		return nil, err
 	}
@@ -409,11 +409,11 @@ func (e *Router) GetAmountsOut(contract common.Address, amountIn *big.Int, path 
 		return nil, err
 	}
 
-	return e.iRouter.UnpackGetAmountsOut(resb)
+	return e.IRouter.UnpackGetAmountsOut(resb)
 }
 
 func (e *Router) GetAmountsIn(contract common.Address, amountOut *big.Int, path []common.Address) ([]*big.Int, error) {
-	b, err := e.iRouter.GetAmountsIn(amountOut, path)
+	b, err := e.IRouter.GetAmountsIn(amountOut, path)
 	if err != nil {
 		return nil, err
 	}
@@ -422,5 +422,5 @@ func (e *Router) GetAmountsIn(contract common.Address, amountOut *big.Int, path 
 		return nil, err
 	}
 
-	return e.iRouter.UnpackGetAmountsIn(resb)
+	return e.IRouter.UnpackGetAmountsIn(resb)
 }

@@ -9,20 +9,20 @@ import (
 
 type Pair struct {
 	engine *ether.Engine
-	iPair  *IPair
+	IPair  *IPair
 	*erc20.Erc20
 }
 
 func NewPair(engine *ether.Engine) *Pair {
 	return &Pair{
 		engine: engine,
-		iPair:  &IPair{},
+		IPair:  &IPair{},
 		Erc20:  erc20.NewErc20(engine),
 	}
 }
 
 func (p *Pair) Factory(contract common.Address) (common.Address, error) {
-	b, err := p.iPair.Factory()
+	b, err := p.IPair.Factory()
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -31,11 +31,11 @@ func (p *Pair) Factory(contract common.Address) (common.Address, error) {
 		return common.Address{}, err
 	}
 
-	return p.iPair.UnpackFactory(resb)
+	return p.IPair.UnpackFactory(resb)
 }
 
 func (p *Pair) Token0(contract common.Address) (common.Address, error) {
-	b, err := p.iPair.Token0()
+	b, err := p.IPair.Token0()
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -44,11 +44,11 @@ func (p *Pair) Token0(contract common.Address) (common.Address, error) {
 		return common.Address{}, err
 	}
 
-	return p.iPair.UnpackToken0(resb)
+	return p.IPair.UnpackToken0(resb)
 }
 
 func (p *Pair) Token1(contract common.Address) (common.Address, error) {
-	b, err := p.iPair.Token1()
+	b, err := p.IPair.Token1()
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -57,11 +57,11 @@ func (p *Pair) Token1(contract common.Address) (common.Address, error) {
 		return common.Address{}, err
 	}
 
-	return p.iPair.UnpackToken1(resb)
+	return p.IPair.UnpackToken1(resb)
 }
 
 func (p *Pair) Price0CumulativeLast(contract common.Address) (*big.Int, error) {
-	b, err := p.iPair.Price0CumulativeLast()
+	b, err := p.IPair.Price0CumulativeLast()
 	if err != nil {
 		return nil, err
 	}
@@ -70,11 +70,11 @@ func (p *Pair) Price0CumulativeLast(contract common.Address) (*big.Int, error) {
 		return nil, err
 	}
 
-	return p.iPair.UnpackPrice0CumulativeLast(resb)
+	return p.IPair.UnpackPrice0CumulativeLast(resb)
 }
 
 func (p *Pair) Price1CumulativeLast(contract common.Address) (*big.Int, error) {
-	b, err := p.iPair.Price1CumulativeLast()
+	b, err := p.IPair.Price1CumulativeLast()
 	if err != nil {
 		return nil, err
 	}
@@ -83,11 +83,11 @@ func (p *Pair) Price1CumulativeLast(contract common.Address) (*big.Int, error) {
 		return nil, err
 	}
 
-	return p.iPair.UnpackPrice1CumulativeLast(resb)
+	return p.IPair.UnpackPrice1CumulativeLast(resb)
 }
 
 func (p *Pair) KLast(contract common.Address) (*big.Int, error) {
-	b, err := p.iPair.KLast()
+	b, err := p.IPair.KLast()
 	if err != nil {
 		return nil, err
 	}
@@ -96,11 +96,11 @@ func (p *Pair) KLast(contract common.Address) (*big.Int, error) {
 		return nil, err
 	}
 
-	return p.iPair.UnpackKLast(resb)
+	return p.IPair.UnpackKLast(resb)
 }
 
 func (p *Pair) GetReserves(contract common.Address) (reserve0, reserve1 *big.Int, blockTimestampLast uint32, err error) {
-	b, err := p.iPair.GetReserves()
+	b, err := p.IPair.GetReserves()
 	if err != nil {
 		return
 	}
@@ -109,11 +109,11 @@ func (p *Pair) GetReserves(contract common.Address) (reserve0, reserve1 *big.Int
 		return
 	}
 
-	return p.iPair.UnpackGetReserves(resb)
+	return p.IPair.UnpackGetReserves(resb)
 }
 
 func (p *Pair) DOMAIN_SEPARATOR(contract common.Address) (common.Hash, error) {
-	b, err := p.iPair.DOMAIN_SEPARATOR()
+	b, err := p.IPair.DOMAIN_SEPARATOR()
 	if err != nil {
 		return common.Hash{}, err
 	}
@@ -121,11 +121,11 @@ func (p *Pair) DOMAIN_SEPARATOR(contract common.Address) (common.Hash, error) {
 	if err != nil {
 		return common.Hash{}, err
 	}
-	return p.iPair.UnpackDOMAIN_SEPARATOR(resb)
+	return p.IPair.UnpackDOMAIN_SEPARATOR(resb)
 }
 
 func (p *Pair) PERMIT_TYPEHASH(contract common.Address) (common.Hash, error) {
-	b, err := p.iPair.PERMIT_TYPEHASH()
+	b, err := p.IPair.PERMIT_TYPEHASH()
 	if err != nil {
 		return common.Hash{}, err
 	}
@@ -133,11 +133,11 @@ func (p *Pair) PERMIT_TYPEHASH(contract common.Address) (common.Hash, error) {
 	if err != nil {
 		return common.Hash{}, err
 	}
-	return p.iPair.UnpackPERMIT_TYPEHASH(resb)
+	return p.IPair.UnpackPERMIT_TYPEHASH(resb)
 }
 
 func (p *Pair) Nonces(contract, sender common.Address) (*big.Int, error) {
-	b, err := p.iPair.Nonces(sender)
+	b, err := p.IPair.Nonces(sender)
 	if err != nil {
 		return nil, err
 	}
@@ -145,5 +145,5 @@ func (p *Pair) Nonces(contract, sender common.Address) (*big.Int, error) {
 	if err != nil {
 		return nil, err
 	}
-	return p.iPair.UnpackNonces(resb)
+	return p.IPair.UnpackNonces(resb)
 }

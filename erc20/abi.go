@@ -40,7 +40,7 @@ func (e *Erc20Abi) Method(fn string, param ...interface{}) ([]byte, error) {
 
 	b, err := erc20Abi.Pack(fn, param...)
 	if err != nil {
-		return nil, errors.Wrap(err, "erc20Abi pack err")
+		return nil, errors.Wrap(err, "Erc20Abi pack err")
 	}
 
 	return b, nil

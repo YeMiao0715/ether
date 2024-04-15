@@ -8,19 +8,19 @@ import (
 )
 
 type Erc20 struct {
-	erc20Abi Erc20Abi
+	Erc20Abi Erc20Abi
 	engine   *ether.Engine
 }
 
 func NewErc20(engine *ether.Engine) *Erc20 {
 	return &Erc20{
-		erc20Abi: Erc20Abi{},
+		Erc20Abi: Erc20Abi{},
 		engine:   engine,
 	}
 }
 
 func (e *Erc20) Name(contract common.Address) (string, error) {
-	b, err := e.erc20Abi.Name()
+	b, err := e.Erc20Abi.Name()
 	if err != nil {
 		return "", err
 	}
@@ -30,11 +30,11 @@ func (e *Erc20) Name(contract common.Address) (string, error) {
 		return "", err
 	}
 
-	return e.erc20Abi.UnpackName(resb)
+	return e.Erc20Abi.UnpackName(resb)
 }
 
 func (e *Erc20) Symbol(contract common.Address) (string, error) {
-	b, err := e.erc20Abi.Symbol()
+	b, err := e.Erc20Abi.Symbol()
 	if err != nil {
 		return "", err
 	}
@@ -48,11 +48,11 @@ func (e *Erc20) Symbol(contract common.Address) (string, error) {
 		return "", err
 	}
 
-	return e.erc20Abi.UnpackName(resb)
+	return e.Erc20Abi.UnpackName(resb)
 }
 
 func (e *Erc20) Decimals(contract common.Address) (uint8, error) {
-	b, err := e.erc20Abi.Decimals()
+	b, err := e.Erc20Abi.Decimals()
 	if err != nil {
 		return 0, err
 	}
@@ -62,11 +62,11 @@ func (e *Erc20) Decimals(contract common.Address) (uint8, error) {
 		return 0, err
 	}
 
-	return e.erc20Abi.UnpackDecimals(resb)
+	return e.Erc20Abi.UnpackDecimals(resb)
 }
 
 func (e *Erc20) TotalSupply(contract common.Address) (*big.Int, error) {
-	b, err := e.erc20Abi.TotalSupply()
+	b, err := e.Erc20Abi.TotalSupply()
 	if err != nil {
 		return nil, err
 	}
@@ -76,11 +76,11 @@ func (e *Erc20) TotalSupply(contract common.Address) (*big.Int, error) {
 		return nil, err
 	}
 
-	return e.erc20Abi.UnpackTotalSupply(resb)
+	return e.Erc20Abi.UnpackTotalSupply(resb)
 }
 
 func (e *Erc20) BalanceOf(contract, address common.Address) (*big.Int, error) {
-	b, err := e.erc20Abi.BalanceOf(address)
+	b, err := e.Erc20Abi.BalanceOf(address)
 	if err != nil {
 		return nil, err
 	}
@@ -90,11 +90,11 @@ func (e *Erc20) BalanceOf(contract, address common.Address) (*big.Int, error) {
 		return nil, err
 	}
 
-	return e.erc20Abi.UnpackBalanceOf(resb)
+	return e.Erc20Abi.UnpackBalanceOf(resb)
 }
 
 func (e *Erc20) Approve(contract, owner, spender common.Address, amount *big.Int, privateKey string) (string, *types.Transaction, error) {
-	b, err := e.erc20Abi.Approve(spender, amount)
+	b, err := e.Erc20Abi.Approve(spender, amount)
 	if err != nil {
 		return "", nil, err
 	}
@@ -110,7 +110,7 @@ func (e *Erc20) Approve(contract, owner, spender common.Address, amount *big.Int
 }
 
 func (e *Erc20) Allowance(contract, owner, spender common.Address) (*big.Int, error) {
-	b, err := e.erc20Abi.Allowance(owner, spender)
+	b, err := e.Erc20Abi.Allowance(owner, spender)
 	if err != nil {
 		return nil, err
 	}
@@ -120,11 +120,11 @@ func (e *Erc20) Allowance(contract, owner, spender common.Address) (*big.Int, er
 		return nil, err
 	}
 
-	return e.erc20Abi.UnpackAllowance(resb)
+	return e.Erc20Abi.UnpackAllowance(resb)
 }
 
 func (e *Erc20) Transfer(contract, recipient common.Address, amount *big.Int, privateKey string) (string, *types.Transaction, error) {
-	b, err := e.erc20Abi.Transfer(recipient, amount)
+	b, err := e.Erc20Abi.Transfer(recipient, amount)
 	if err != nil {
 		return "", nil, err
 	}
@@ -140,7 +140,7 @@ func (e *Erc20) Transfer(contract, recipient common.Address, amount *big.Int, pr
 }
 
 func (e *Erc20) TransferFrom(contract, from, recipient common.Address, amount *big.Int, privateKey string) (string, *types.Transaction, error) {
-	b, err := e.erc20Abi.TransferFrom(from, recipient, amount)
+	b, err := e.Erc20Abi.TransferFrom(from, recipient, amount)
 	if err != nil {
 		return "", nil, err
 	}

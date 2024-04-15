@@ -14,8 +14,8 @@ var engine *Engine
 
 func init() {
 	logger, _ := zap.NewDevelopment()
-	engine = NewEngine(logger, "http://127.0.0.1:8545", "")
-	//engine = NewEngine(logger, "https://data-seed-prebsc-1-s1.binance.org:8545/", "")
+	//engine = NewEngine(logger, "http://127.0.0.1:8545", "")
+	engine = NewEngine(logger, "https://data-seed-prebsc-1-s1.binance.org:8545/", "")
 	//engine.SetGasPrice(decimal.New(10, 9).BigInt())
 }
 
