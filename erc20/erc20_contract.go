@@ -4,6 +4,7 @@ import (
 	"github.com/YeMiao0715/ether"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/shopspring/decimal"
 	"math/big"
 )
 
@@ -85,4 +86,39 @@ func (e *Erc20Contract) Transfer(recipient common.Address, amount *big.Int, priv
 
 func (e *Erc20Contract) TransferFrom(from, recipient common.Address, amount *big.Int, privateKey string) (string, *types.Transaction, error) {
 	return e.erc20.TransferFrom(e.contract, from, recipient, amount, privateKey)
+}
+
+type Erc20Info struct {
+	Name     string `json:"name"`
+	Symbol   string `json:"symbol"`
+	Decimals uint8  `json:"decimals"`
+}
+
+func (e *Erc20Contract) Info() (*Erc20Info, error) {
+	name, err := e.Name()
+	if err != nil {
+		return nil, err
+	}
+	symbol, err := e.Symbol()
+	if err != nil {
+		return nil, err
+	}
+	decimals, err := e.Decimals()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Erc20Info{
+		Name:     name,
+		Symbol:   symbol,
+		Decimals: decimals,
+	}, nil
+}
+
+func (e *Erc20Contract) ToAmount(amount float64) (decimal.Decimal, error) {
+	decimals, err := e.Decimals()
+	if err != nil {
+		return decimal.Zero, nil
+	}
+	return decimal.NewFromFloat(amount).Mul(decimal.New(1, int32(decimals))), nil
 }

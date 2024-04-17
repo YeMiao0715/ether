@@ -41,6 +41,11 @@ func (i *IPair) Method(fn string, param ...interface{}) ([]byte, error) {
 	return b, nil
 }
 
+func (e *IPair) MustAbi() *abi.ABI {
+	abi, _ := e.GetAbi()
+	return abi
+}
+
 func (i *IPair) Factory() ([]byte, error) {
 	return i.Method("factory")
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/shopspring/decimal"
 	"math/big"
 )
 
@@ -13,6 +14,11 @@ type PairContract struct {
 	contract common.Address
 	*Pair
 	*erc20.Erc20Contract
+
+	cacheToken0Address *common.Address
+	cacheToken1Address *common.Address
+	cacheToken0Erc20   *erc20.Erc20Contract
+	cacheToken1Erc20   *erc20.Erc20Contract
 }
 
 func NewPairContract(engine *ether.Engine, contract common.Address) *PairContract {
@@ -32,11 +38,45 @@ func (p *PairContract) Factory() (common.Address, error) {
 }
 
 func (p *PairContract) Token0() (common.Address, error) {
-	return p.Pair.Token0(p.contract)
+	if p.cacheToken0Address == nil {
+		token0, err := p.Pair.Token0(p.contract)
+		if err != nil {
+			return common.Address{}, err
+		}
+		p.cacheToken0Address = &token0
+	}
+	return *p.cacheToken0Address, nil
+}
+func (p *PairContract) Token0Contract() (*erc20.Erc20Contract, error) {
+	if p.cacheToken0Erc20 == nil {
+		token0, err := p.Token0()
+		if err != nil {
+			return nil, err
+		}
+		p.cacheToken0Erc20 = erc20.NewErc20WithContract(p.engine, token0)
+	}
+	return p.cacheToken0Erc20, nil
 }
 
 func (p *PairContract) Token1() (common.Address, error) {
-	return p.Pair.Token1(p.contract)
+	if p.cacheToken1Address == nil {
+		token1, err := p.Pair.Token1(p.contract)
+		if err != nil {
+			return common.Address{}, err
+		}
+		p.cacheToken1Address = &token1
+	}
+	return *p.cacheToken1Address, nil
+}
+func (p *PairContract) Token1Contract() (*erc20.Erc20Contract, error) {
+	if p.cacheToken1Erc20 == nil {
+		token1, err := p.Token1()
+		if err != nil {
+			return nil, err
+		}
+		p.cacheToken1Erc20 = erc20.NewErc20WithContract(p.engine, token1)
+	}
+	return p.cacheToken1Erc20, nil
 }
 
 func (p *PairContract) Price0CumulativeLast() (*big.Int, error) {
@@ -130,4 +170,73 @@ func (p *PairContract) PermitSign(sender common.Address, amount *big.Int, deadli
 	v = new(big.Int).SetBytes([]byte{sig[64] + 27})
 
 	return
+}
+
+func (p *PairContract) GetAmountOut(amountInBigInt *big.Int, tokenA common.Address) (amountOut *big.Int, err error) {
+	reserve0, reserve1, _, err := p.GetReserves()
+	if err != nil {
+		return
+	}
+	token0, err := p.Token0()
+	if err != nil {
+		return
+	}
+	if tokenA != token0 {
+		reserve0, reserve1 = reserve1, reserve0
+	}
+
+	amountIn := decimal.NewFromBigInt(amountInBigInt, 0)
+	reserveIn := decimal.NewFromBigInt(reserve0, 0)
+	reserveOut := decimal.NewFromBigInt(reserve1, 0)
+	amountInWithFee := amountIn.Mul(decimal.NewFromInt(997))
+	numerator := amountInWithFee.Mul(reserveOut)
+	denominator := reserveIn.Mul(decimal.NewFromInt(1000)).Add(amountInWithFee)
+	amountOut = numerator.Div(denominator).Truncate(0).BigInt()
+	return
+}
+
+func (p *PairContract) GetAmountIn(amountOutBigInt *big.Int, tokenA common.Address) (amountIn *big.Int, err error) {
+	reserve0, reserve1, _, err := p.GetReserves()
+	if err != nil {
+		return
+	}
+	token0, err := p.Token0()
+	if err != nil {
+		return
+	}
+	if tokenA != token0 {
+		reserve0, reserve1 = reserve1, reserve0
+	}
+	reserveIn := decimal.NewFromBigInt(reserve0, 0)
+	reserveOut := decimal.NewFromBigInt(reserve1, 0)
+	amountOut := decimal.NewFromBigInt(amountOutBigInt, 0)
+	numerator := reserveIn.Mul(amountOut).Mul(decimal.NewFromInt(1000))
+	denominator := reserveOut.Sub(amountOut).Mul(decimal.NewFromInt(997))
+	amountIn = numerator.Div(denominator).Truncate(0).Add(decimal.NewFromInt(1)).BigInt()
+	return
+}
+
+func (p *PairContract) Price(token *erc20.Erc20Contract) (*big.Int, error) {
+	reserve0, reserve1, _, err := p.GetReserves()
+	if err != nil {
+		return nil, err
+	}
+	token0, err := p.Token0()
+	if err != nil {
+		return nil, err
+	}
+	if token.Contract() != token0 {
+		reserve0, reserve1 = reserve1, reserve0
+	}
+	amountIn, err := token.ToAmount(1)
+	if err != nil {
+		return nil, err
+	}
+	reserveIn := decimal.NewFromBigInt(reserve0, 0)
+	reserveOut := decimal.NewFromBigInt(reserve1, 0)
+	amountInWithFee := amountIn.Mul(decimal.NewFromInt(1000))
+	numerator := amountInWithFee.Mul(reserveOut)
+	denominator := reserveIn.Mul(decimal.NewFromInt(1000)).Add(amountInWithFee)
+	amountOut := numerator.Div(denominator).Truncate(0).BigInt()
+	return amountOut, nil
 }

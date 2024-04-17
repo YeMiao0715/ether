@@ -292,67 +292,6 @@ func (s *Service) AmountByLpFromFloat(amount float64) (*big.Int, error) {
 	return decimal.NewFromFloat(amount).Mul(decimal.New(1, int32(decimals))).BigInt(), nil
 }
 
-// Price 价格 1 tokenA: %d tokenB
-func (s *Service) Price() (*ServicePrice, error) {
-	_tokenA, err := s.TokenA()
-	if err != nil {
-		return nil, err
-	}
-	decimalsByA, err := _tokenA.Decimals()
-	if err != nil {
-		return nil, err
-	}
-	inAmount := decimal.New(1, int32(decimalsByA)).BigInt()
-	return s.PriceOfTokenA(inAmount)
-}
-
-// PriceOfTokenA 价格 {amount} tokenA: %d tokenB
-func (s *Service) PriceOfTokenA(inAmount *big.Int) (*ServicePrice, error) {
-	_tokenA, err := s.TokenA()
-	if err != nil {
-		return nil, err
-	}
-	decimalsByA, err := _tokenA.Decimals()
-	if err != nil {
-		return nil, err
-	}
-	symbolByA, err := _tokenA.Symbol()
-	if err != nil {
-		return nil, err
-	}
-	outAmount := big.NewInt(0)
-	if inAmount.Int64() != 0 {
-		_, outAmount, err = s.GetAmountsOut(inAmount)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	_tokenB, _ := s.TokenB()
-	decimalsByB, err := _tokenB.Decimals()
-	if err != nil {
-		return nil, err
-	}
-	symbolByB, err := _tokenB.Symbol()
-	if err != nil {
-		return nil, err
-	}
-
-	return &ServicePrice{
-		Coin: ServicePriceCoin{
-			Symbol:   symbolByA,
-			Decimals: decimalsByA,
-			Amount:   inAmount,
-		},
-		ToCoin: ServicePriceCoin{
-			Symbol:   symbolByB,
-			Decimals: decimalsByB,
-			Amount:   outAmount,
-		},
-		Price: outAmount,
-	}, nil
-}
-
 // GetAmountsOut 获取对应金额 A to B
 func (s *Service) GetAmountsOut(inAmount *big.Int) (*big.Int, *big.Int, error) {
 	_tokenA, err := s.TokenA()
@@ -370,7 +309,6 @@ func (s *Service) GetAmountsOut(inAmount *big.Int) (*big.Int, *big.Int, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-
 	return res[0], res[1], nil
 }
 

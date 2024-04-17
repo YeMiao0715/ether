@@ -31,32 +31,31 @@ func init() {
 
 func TestService_NewServiceForTokenAndWETH(t *testing.T) {
 	// 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45 goerli swapRouter2
-	tokenA := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
+	//tokenA := common.HexToAddress("0xdAC17F958D2ee523a2206206994597C13D831ec7")
 	//tokenB := common.HexToAddress("")
 	//serv.MustFactory().GetPair(tokenA, tokenB)
 	//serv.MustFactory().
 
-	weth2Usdt, err := serv.NewServiceForTokenAndWETH(tokenA)
+	pairContract := NewPairContract(engine, common.HexToAddress("0xcaa004418eb42cdf00cb057b7c9e28f0ffd840a5"))
+	token0, err := pairContract.Token0Contract()
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
-	fmt.Println(weth2Usdt.Symbol())
-	fmt.Println(weth2Usdt.tokenA.Contract())
-	fmt.Println(weth2Usdt.tokenB.Contract())
-	fmt.Println(weth2Usdt.Price())
+	token1, err := pairContract.Token1Contract()
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(pairContract.Price(token0))
+	//fmt.Println(pairContract.Price(token1))
+
+	outAmount, _ := token1.ToAmount(1)
+	fmt.Println(pairContract.GetAmountIn(outAmount.BigInt(), token1.Contract()))
 
 }
 
 func TestNewServiceWithPairAndRouter(t *testing.T) {
 	// 0x4E99615101cCBB83A462dC4DE2bc1362EF1365e5 uni
 	//serv := NewServiceWithPairAndRouter(engine, common.HexToAddress("0x4E99615101cCBB83A462dC4DE2bc1362EF1365e5"), router2)
-	t.Log(serv.Symbol())
-	_price, err := serv.Price()
-	t.Log(_price.ToDecimal().String(), err)
-	t.Log(_price.ToString(), err)
-	inAmount, err := serv.AmountByTokenAFromFloat(1)
-	t.Log(inAmount, err)
-	t.Log(serv.GetAmountsOut(inAmount))
 	//factoryContract, _ := serv.Factory()
 	//tokenb, err := serv.TokenB()
 	//if err != nil {
