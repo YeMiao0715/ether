@@ -6,29 +6,29 @@ import (
 )
 
 type Pool struct {
-	engine   *ether.Engine
-	IPoolAbi IPoolAbi
+	engine *ether.Engine
+	IPool  *IPool
 }
 
 func NewPool(engine *ether.Engine) *Pool {
 	return &Pool{
-		engine:   engine,
-		IPoolAbi: IPoolAbi{},
+		engine: engine,
+		IPool:  IPoolAbi,
 	}
 }
 
 func (p *Pool) Slot0(contractAddress common.Address) (*Slot0, error) {
-	data, _ := p.IPoolAbi.Slot0()
+	data, _ := p.IPool.Slot0()
 	data, err := p.engine.CallContract(contractAddress, data)
 	if err != nil {
 		return nil, err
 	}
 
-	return p.IPoolAbi.UnpackSlot0(data)
+	return p.IPool.UnpackSlot0(data)
 }
 
 func (p *Pool) Token0(contract common.Address) (common.Address, error) {
-	b, err := p.IPoolAbi.Token0()
+	b, err := p.IPool.Token0()
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -37,11 +37,11 @@ func (p *Pool) Token0(contract common.Address) (common.Address, error) {
 		return common.Address{}, err
 	}
 
-	return p.IPoolAbi.UnpackToken0(resb)
+	return p.IPool.UnpackToken0(resb)
 }
 
 func (p *Pool) Token1(contract common.Address) (common.Address, error) {
-	b, err := p.IPoolAbi.Token1()
+	b, err := p.IPool.Token1()
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -50,5 +50,5 @@ func (p *Pool) Token1(contract common.Address) (common.Address, error) {
 		return common.Address{}, err
 	}
 
-	return p.IPoolAbi.UnpackToken1(resb)
+	return p.IPool.UnpackToken1(resb)
 }

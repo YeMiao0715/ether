@@ -15,7 +15,7 @@ type Router struct {
 func NewRouter2(engine *ether.Engine) *Router {
 	return &Router{
 		engine:  engine,
-		IRouter: &IRouter{},
+		IRouter: IRouterAbi,
 	}
 }
 

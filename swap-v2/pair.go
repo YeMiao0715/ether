@@ -16,7 +16,7 @@ type Pair struct {
 func NewPair(engine *ether.Engine) *Pair {
 	return &Pair{
 		engine: engine,
-		IPair:  &IPair{},
+		IPair:  IPairAbi,
 		Erc20:  erc20.NewErc20(engine),
 	}
 }

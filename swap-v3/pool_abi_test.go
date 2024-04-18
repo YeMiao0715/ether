@@ -12,7 +12,7 @@ import (
 )
 
 var engine *ether.Engine
-var ipoolAbi = &IPoolAbi{}
+var ipoolAbi = &IPool{}
 
 func init() {
 	logger, _ := zap.NewDevelopment()

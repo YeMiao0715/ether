@@ -15,7 +15,7 @@ type Factory struct {
 func NewFactory(engine *ether.Engine) *Factory {
 	return &Factory{
 		engine:   engine,
-		IFactory: &IFactory{},
+		IFactory: IFactoryAbi,
 	}
 }
 
