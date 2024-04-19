@@ -42,8 +42,8 @@ func (i *IPool) Method(fn string, param ...interface{}) ([]byte, error) {
 }
 
 func (i *IPool) MustAbi() *abi.ABI {
-	abi, _ := i.GetAbi()
-	return abi
+	targetAbi, _ := i.GetAbi()
+	return targetAbi
 }
 
 func (i *IPool) Slot0() ([]byte, error) {
