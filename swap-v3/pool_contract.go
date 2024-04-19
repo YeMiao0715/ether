@@ -5,6 +5,7 @@ import (
 	"github.com/YeMiao0715/ether/erc20"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/shopspring/decimal"
+	"math/big"
 )
 
 type PoolContract struct {
@@ -49,6 +50,14 @@ func (p *PoolContract) Token1() (*common.Address, error) {
 	}
 	return p.cacheToken1, nil
 }
+
+func (p *PoolContract) Fee() (*big.Int, error) {
+	return p.Pool.Fee(p.contractAddress)
+}
+
+//func (p *PoolContract) GetPriceInput(amountIn decimal.Decimal, token common.Address) (decimal.Decimal, error) {
+//
+//}
 
 func (p *PoolContract) Price() (decimal.Decimal, error) {
 	slot0, err := p.Slot0()

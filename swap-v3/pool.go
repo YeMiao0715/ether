@@ -3,6 +3,7 @@ package swap_v3
 import (
 	"github.com/YeMiao0715/ether"
 	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 )
 
 type Pool struct {
@@ -51,4 +52,17 @@ func (p *Pool) Token1(contract common.Address) (common.Address, error) {
 	}
 
 	return p.IPool.UnpackToken1(resb)
+}
+
+func (p *Pool) Fee(contract common.Address) (*big.Int, error) {
+	b, err := p.IPool.Fee()
+	if err != nil {
+		return nil, err
+	}
+	resb, err := p.engine.CallContract(contract, b)
+	if err != nil {
+		return nil, err
+	}
+
+	return p.IPool.UnpackFee(resb)
 }

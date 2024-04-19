@@ -216,31 +216,6 @@ func (p *PairContract) GetAmountIn(amountOutBigInt *big.Int, tokenA common.Addre
 	return
 }
 
-func (p *PairContract) Price(token *erc20.Erc20Contract) (*big.Int, error) {
-	amountIn, err := token.ToAmount(1)
-	if err != nil {
-		return nil, err
-	}
-	return p.PriceByAmount(amountIn, token.Contract())
-}
-
-func (p *PairContract) PriceByAmount(amountIn decimal.Decimal, tokenA common.Address) (*big.Int, error) {
-	reserve0, reserve1, _, err := p.GetReserves()
-	if err != nil {
-		return nil, err
-	}
-	token0, err := p.Token0()
-	if err != nil {
-		return nil, err
-	}
-	if tokenA != token0 {
-		reserve0, reserve1 = reserve1, reserve0
-	}
-	reserveIn := decimal.NewFromBigInt(reserve0, 0)
-	reserveOut := decimal.NewFromBigInt(reserve1, 0)
-	amountInWithFee := amountIn.Mul(decimal.NewFromInt(1000))
-	numerator := amountInWithFee.Mul(reserveOut)
-	denominator := reserveIn.Mul(decimal.NewFromInt(1000)).Add(amountInWithFee)
-	amountOut := numerator.Div(denominator).Truncate(0).BigInt()
-	return amountOut, nil
+func (p *PairContract) GetPriceInput(amountIn decimal.Decimal, token common.Address) (*big.Int, error) {
+	return p.GetAmountIn(amountIn.BigInt(), token)
 }

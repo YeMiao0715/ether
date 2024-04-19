@@ -91,6 +91,18 @@ func (i *IPool) UnpackToken1(data []byte) (common.Address, error) {
 	return result[0].(common.Address), err
 }
 
+func (i *IPool) Fee() ([]byte, error) {
+	return i.Method("fee")
+}
+
+func (i *IPool) UnpackFee(data []byte) (*big.Int, error) {
+	result, err := i.abi.Unpack("fee", data)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return result[0].(*big.Int), errors.WithStack(err)
+}
+
 func (i *IPool) Mint(recipient common.Address, tickLower, tickUpper, amount *big.Int) ([]byte, error) {
 	return i.Method("mint", recipient, tickLower, tickUpper, amount)
 }
