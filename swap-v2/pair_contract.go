@@ -172,6 +172,26 @@ func (p *PairContract) PermitSign(sender common.Address, amount *big.Int, deadli
 	return
 }
 
+// Quote 实现：https://github.com/Uniswap/v2-periphery/blob/master/contracts/libraries/UniswapV2Library.sol
+func (p *PairContract) Quote(amountA decimal.Decimal, tokenA common.Address) (amountB *big.Int, err error) {
+	reserve0, reserve1, _, err := p.GetReserves()
+	if err != nil {
+		return
+	}
+	token0, err := p.Token0()
+	if err != nil {
+		return
+	}
+	if tokenA != token0 {
+		reserve0, reserve1 = reserve1, reserve0
+	}
+	reserveA := decimal.NewFromBigInt(reserve0, 0)
+	reserveB := decimal.NewFromBigInt(reserve1, 0)
+	amountB = amountA.Mul(reserveB).Div(reserveA).BigInt()
+	return
+}
+
+// GetAmountOut 实现：https://github.com/Uniswap/v2-periphery/blob/master/contracts/libraries/UniswapV2Library.sol
 func (p *PairContract) GetAmountOut(amountInBigInt *big.Int, tokenA common.Address) (amountOut *big.Int, err error) {
 	reserve0, reserve1, _, err := p.GetReserves()
 	if err != nil {
@@ -195,6 +215,7 @@ func (p *PairContract) GetAmountOut(amountInBigInt *big.Int, tokenA common.Addre
 	return
 }
 
+// GetAmountIn 实现：https://github.com/Uniswap/v2-periphery/blob/master/contracts/libraries/UniswapV2Library.sol
 func (p *PairContract) GetAmountIn(amountOutBigInt *big.Int, tokenA common.Address) (amountIn *big.Int, err error) {
 	reserve0, reserve1, _, err := p.GetReserves()
 	if err != nil {
@@ -214,8 +235,4 @@ func (p *PairContract) GetAmountIn(amountOutBigInt *big.Int, tokenA common.Addre
 	denominator := reserveOut.Sub(amountOut).Mul(decimal.NewFromInt(997))
 	amountIn = numerator.Div(denominator).Truncate(0).Add(decimal.NewFromInt(1)).BigInt()
 	return
-}
-
-func (p *PairContract) GetPriceInput(amountIn decimal.Decimal, token common.Address) (*big.Int, error) {
-	return p.GetAmountIn(amountIn.BigInt(), token)
 }

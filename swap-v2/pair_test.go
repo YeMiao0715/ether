@@ -60,3 +60,27 @@ func TestPair_PermitSign(t *testing.T) {
 		big.NewInt(1657767358),
 		senderPrivateKey))
 }
+
+func TestPairContract_GetPriceInput(t *testing.T) {
+	pairAddress = common.HexToAddress("0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852")
+
+	pairContract := NewPairContract(engine, pairAddress)
+	token0, err := pairContract.Token0Contract()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	inputAmount, _ := token0.ToAmount(1)
+	output, err := pairContract.GetPriceInput(inputAmount, token0.Contract())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log(output)
+	output, err = pairContract.Quote(inputAmount, token0.Contract())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(output)
+
+}

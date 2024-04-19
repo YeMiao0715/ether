@@ -13,6 +13,7 @@ const pairAbiJson = `[{"inputs":[],"payable":false,"stateMutability":"nonpayable
 
 var IPairAbi = &IPair{}
 
+// IPair
 type IPair struct {
 	abi *abi.ABI
 	erc20.Erc20Abi

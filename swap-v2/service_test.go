@@ -45,7 +45,6 @@ func TestService_NewServiceForTokenAndWETH(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(pairContract.Price(token0))
 	//fmt.Println(pairContract.Price(token1))
 
 	outAmount, _ := token1.ToAmount(1)

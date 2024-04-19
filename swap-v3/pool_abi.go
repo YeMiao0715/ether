@@ -12,6 +12,7 @@ const poolAbiJsonStr = `[{"type":"function","name":"burn","inputs":[{"name":"tic
 
 var IPoolAbi = &IPool{}
 
+// IPool https://github.com/Uniswap/v3-core/blob/main/contracts/UniswapV3Pool.sol
 type IPool struct {
 	abi *abi.ABI
 }
